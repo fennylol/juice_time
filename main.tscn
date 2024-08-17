@@ -1,0 +1,12 @@
+[gd_scene load_steps=4 format=3 uid="uid://dwnu2mt4dp2y4"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_fc0st"]
+[ext_resource type="PackedScene" uid="uid://d1xyjg3y63hy6" path="res://factory/factory_floor.tscn" id="2_8sjmw"]
+[ext_resource type="PackedScene" uid="uid://fusfeda558pl" path="res://UI/GUI.tscn" id="2_am4hy"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_fc0st")
+
+[node name="Gui" parent="." instance=ExtResource("2_am4hy")]
+
+[node name="FactoryFloor" parent="." instance=ExtResource("2_8sjmw")]
