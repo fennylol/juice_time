@@ -1,6 +1,14 @@
 extends Node2D
 
-@onready var conveyor_tiles: TileMap = $conveyor_tiles
+@onready var CONVEYOR_TILES: TileMap = $conveyor_tiles
+@onready var BOTTLE_TILES: TileMap = $bottle_tiles
+@onready var MACHINE_TILES: TileMap = $machine_tiles
+@onready var TRUCK_AND_FILLERS : TileMap = $truck_and_fillers
+
+var patterns: Dictionary = {
+	"truck" : TileMapPattern.new(),
+	"bottle_filler" : TileMapPattern.new()
+}
 enum {MIDDLE, START, END}
 
 var TILES: Dictionary = {
@@ -10,23 +18,68 @@ var TILES: Dictionary = {
 	Vector2i.UP    : [Vector2i(0,9), Vector2i(0,10), Vector2i(0,11)]
 }
 
+var DIR_FROM_TILE: Dictionary = {
+	Vector2i(-1,-1) : Vector2i.ZERO,
+	Vector2i(0,0) : Vector2i.RIGHT,
+	Vector2i(0,1) : Vector2i.RIGHT,
+	Vector2i(0,2) : Vector2i.RIGHT,
+	Vector2i(0,3) : Vector2i.DOWN,
+	Vector2i(0,4) : Vector2i.DOWN,
+	Vector2i(0,5) : Vector2i.DOWN,
+	Vector2i(0,6) : Vector2i.LEFT,
+	Vector2i(0,7) : Vector2i.LEFT,
+	Vector2i(0,8) : Vector2i.LEFT,
+	Vector2i(0,9) : Vector2i.UP,
+	Vector2i(0,10) : Vector2i.UP,
+	Vector2i(0,11) : Vector2i.UP 
+}
+
+#region UTILITY
 
 func _ready():
-	pass 
+	## PATTERN SETUP - TRUCK
+	var truck_poss = [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1),Vector2i(0,2),Vector2i(1,2)]
+	patterns["truck"] = TRUCK_AND_FILLERS.get_pattern(0, truck_poss)
+	for pos in truck_poss:
+		TRUCK_AND_FILLERS.erase_cell(0, pos)
+	## PATTERN SETUP - FILLER
+	var filler_poss = [Vector2i(2,1),Vector2i(2,0)]
+	patterns["bottle_filler"] = TRUCK_AND_FILLERS.get_pattern(0, filler_poss)
+	for pos in filler_poss:
+		TRUCK_AND_FILLERS.erase_cell(0, pos)
+	
+	spawn_bottle_filler()
+	spawn_truck()
 
+func modulate_speed(multi : float):
+	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
 
 func process_world_tick():
-	# update all tile maps
+	## MOVE BOTTLES
+	for pos in BOTTLE_TILES.get_used_cells(0):
+		var conveyor_dir = DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)]
+		var new_pos = pos + conveyor_dir
+		# TODO: dont move if a bottle already occupies that pos
+		BOTTLE_TILES.erase_cell(0, pos)
+		BOTTLE_TILES.set_cell(0, new_pos, 0, Vector2.ZERO)
+	
+	## SPAWN TRUCKS AND FILLERS
+	pass
+	
+	## EARN INCOME??
 	pass
 
+
+#endregion
+#region CONVEYORS
 
 func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 	## TILEMAP STUFF :/
 	var source = 0
 	
 	## PULL START AND END POSITION INTO TILEMAP SPACE
-	var start_pos: Vector2i = conveyor_tiles.local_to_map(startpoint) 
-	var end_pos: Vector2i = conveyor_tiles.local_to_map(endpoint) 
+	var start_pos: Vector2i = CONVEYOR_TILES.local_to_map(startpoint) 
+	var end_pos: Vector2i = CONVEYOR_TILES.local_to_map(endpoint) 
 	## GET THE VECTOR2 DIFFERENCE BETWEEN START AND END, AND FIND THE CARDINAL DIRECTION OF THE LINE BETWEEN
 	var diff: Vector2i = endpoint - startpoint
 	var direction: Vector2i = Vector2i.LEFT if abs(diff.x) >= abs(diff.y) and diff.x < 0 else \
@@ -41,15 +94,33 @@ func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 	## TODO: detect existing tiles
 	while curr_pos != target_pos:
 		var tile: Vector2i = TILES[direction][START if curr_pos == start_pos else MIDDLE]
-		conveyor_tiles.set_cell(0, curr_pos, source, tile)
+		CONVEYOR_TILES.set_cell(0, curr_pos, source, tile)
 		curr_pos += direction
-	conveyor_tiles.set_cell(0, target_pos, source, TILES[direction][END])
-
+	CONVEYOR_TILES.set_cell(0, target_pos, source, TILES[direction][END])
 
 func erase_conveyor(global_pos: Vector2):
-	var pos = conveyor_tiles.local_to_map(global_pos)
-	conveyor_tiles.erase_cell(0, pos)
+	var pos = CONVEYOR_TILES.local_to_map(global_pos)
+	CONVEYOR_TILES.erase_cell(0, pos)
+
+#endregion
+#region MACHINES
 
 func place_machine(pos: Vector2i, tile: int):
 	#i mean its pretty self explanitory
 	pass
+
+#endregion
+#region TRUCKS AND FILLERS
+
+func spawn_bottle_generator():
+	pass
+
+func spawn_bottle_filler():
+	var spawn_location = Vector2i(2,2)
+	TRUCK_AND_FILLERS.set_pattern(0, spawn_location, patterns["bottle_filler"])
+
+func spawn_truck(c: Color = Color.WHITE):
+	var spawn_location = Vector2i(10,7)
+	TRUCK_AND_FILLERS.set_pattern(0, spawn_location, patterns["truck"])
+
+#endregion
