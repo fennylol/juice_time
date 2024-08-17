@@ -1,10 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://d1xyjg3y63hy6"]
+[gd_scene load_steps=7 format=3 uid="uid://d1xyjg3y63hy6"]
 
-[ext_resource type="TileSet" uid="uid://rg3f448ct5j6" path="res://conveyor/basics.tres" id="1_i0p0l"]
 [ext_resource type="Script" path="res://factory/factory_floor.gd" id="1_worr6"]
 [ext_resource type="Texture2D" uid="uid://dhnakla0j3ysu" path="res://JUICE/bottle_simple.png" id="2_84btv"]
+[ext_resource type="TileSet" uid="uid://cdn72xl37w60f" path="res://conveyor/conveyor_animated.tres" id="2_pthvs"]
 [ext_resource type="TileSet" uid="uid://bodklg5klc7vw" path="res://machines/simple_machines.tres" id="3_aekq4"]
-[ext_resource type="Texture2D" uid="uid://cdgaqtgiwbvtc" path="res://conveyor/conveyor_tileset.png" id="5_dyra5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nwfln"]
 texture = ExtResource("2_84btv")
@@ -15,105 +14,15 @@ texture_region_size = Vector2i(64, 64)
 tile_size = Vector2i(64, 64)
 sources/1 = SubResource("TileSetAtlasSource_nwfln")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nbav7"]
-texture = ExtResource("5_dyra5")
-texture_region_size = Vector2i(64, 64)
-0:0/animation_columns = 4
-0:0/animation_speed = 8.0
-0:0/animation_frame_0/duration = 1.0
-0:0/animation_frame_1/duration = 1.0
-0:0/animation_frame_2/duration = 1.0
-0:0/animation_frame_3/duration = 1.0
-0:0/0 = 0
-0:1/animation_columns = 4
-0:1/animation_speed = 8.0
-0:1/animation_frame_0/duration = 1.0
-0:1/animation_frame_1/duration = 1.0
-0:1/animation_frame_2/duration = 1.0
-0:1/animation_frame_3/duration = 1.0
-0:1/0 = 0
-0:2/animation_columns = 4
-0:2/animation_speed = 8.0
-0:2/animation_frame_0/duration = 1.0
-0:2/animation_frame_1/duration = 1.0
-0:2/animation_frame_2/duration = 1.0
-0:2/animation_frame_3/duration = 1.0
-0:2/0 = 0
-0:3/animation_columns = 4
-0:3/animation_speed = 8.0
-0:3/animation_frame_0/duration = 1.0
-0:3/animation_frame_1/duration = 1.0
-0:3/animation_frame_2/duration = 1.0
-0:3/animation_frame_3/duration = 1.0
-0:3/0 = 0
-0:4/animation_columns = 4
-0:4/animation_speed = 8.0
-0:4/animation_frame_0/duration = 1.0
-0:4/animation_frame_1/duration = 1.0
-0:4/animation_frame_2/duration = 1.0
-0:4/animation_frame_3/duration = 1.0
-0:4/0 = 0
-0:5/animation_columns = 4
-0:5/animation_speed = 8.0
-0:5/animation_frame_0/duration = 1.0
-0:5/animation_frame_1/duration = 1.0
-0:5/animation_frame_2/duration = 1.0
-0:5/animation_frame_3/duration = 1.0
-0:5/0 = 0
-0:6/animation_columns = 4
-0:6/animation_speed = 8.0
-0:6/animation_frame_0/duration = 1.0
-0:6/animation_frame_1/duration = 1.0
-0:6/animation_frame_2/duration = 1.0
-0:6/animation_frame_3/duration = 1.0
-0:6/0 = 0
-0:7/animation_columns = 4
-0:7/animation_speed = 8.0
-0:7/animation_frame_0/duration = 1.0
-0:7/animation_frame_1/duration = 1.0
-0:7/animation_frame_2/duration = 1.0
-0:7/animation_frame_3/duration = 1.0
-0:7/0 = 0
-0:8/animation_columns = 4
-0:8/animation_speed = 8.0
-0:8/animation_frame_0/duration = 1.0
-0:8/animation_frame_1/duration = 1.0
-0:8/animation_frame_2/duration = 1.0
-0:8/animation_frame_3/duration = 1.0
-0:8/0 = 0
-0:9/animation_columns = 4
-0:9/animation_speed = 8.0
-0:9/animation_frame_0/duration = 1.0
-0:9/animation_frame_1/duration = 1.0
-0:9/animation_frame_2/duration = 1.0
-0:9/animation_frame_3/duration = 1.0
-0:9/0 = 0
-0:10/animation_columns = 4
-0:10/animation_speed = 8.0
-0:10/animation_frame_0/duration = 1.0
-0:10/animation_frame_1/duration = 1.0
-0:10/animation_frame_2/duration = 1.0
-0:10/animation_frame_3/duration = 1.0
-0:10/0 = 0
-0:11/animation_columns = 4
-0:11/animation_speed = 8.0
-0:11/animation_frame_0/duration = 1.0
-0:11/animation_frame_1/duration = 1.0
-0:11/animation_frame_2/duration = 1.0
-0:11/animation_frame_3/duration = 1.0
-0:11/0 = 0
-
-[sub_resource type="TileSet" id="TileSet_62pu6"]
-tile_size = Vector2i(64, 64)
-sources/0 = SubResource("TileSetAtlasSource_nbav7")
-
 [node name="FactoryFloor" type="Node2D"]
 script = ExtResource("1_worr6")
 
 [node name="conveyor_tiles" type="TileMap" parent="."]
-visible = false
-tile_set = ExtResource("1_i0p0l")
+tile_set = ExtResource("2_pthvs")
+rendering_quadrant_size = 4
+collision_animatable = true
 format = 2
+layer_0/tile_data = PackedInt32Array(65536, 0, 1)
 
 [node name="bottle_tiles" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_u4uko")
@@ -122,10 +31,3 @@ format = 2
 [node name="machine_tiles" type="TileMap" parent="."]
 tile_set = ExtResource("3_aekq4")
 format = 2
-
-[node name="new_conveyor" type="TileMap" parent="."]
-tile_set = SubResource("TileSet_62pu6")
-rendering_quadrant_size = 4
-collision_animatable = true
-format = 2
-layer_0/tile_data = PackedInt32Array(65536, 0, 1)

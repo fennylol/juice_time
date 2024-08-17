@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var conveyor_tiles: TileMap = $new_conveyor
+@onready var conveyor_tiles: TileMap = $conveyor_tiles
 enum {MIDDLE, START, END}
 
 var TILES: Dictionary = {
