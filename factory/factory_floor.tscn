@@ -1,19 +1,22 @@
 [gd_scene load_steps=10 format=3 uid="uid://d1xyjg3y63hy6"]
 
 [ext_resource type="Script" path="res://factory/factory_floor.gd" id="1_worr6"]
-[ext_resource type="Texture2D" uid="uid://dhnakla0j3ysu" path="res://JUICE/bottle_simple.png" id="2_84btv"]
 [ext_resource type="TileSet" uid="uid://cdn72xl37w60f" path="res://conveyor/conveyor_animated.tres" id="2_pthvs"]
+[ext_resource type="Texture2D" uid="uid://byt4riujt255d" path="res://JUICE/bottle.png" id="3_5j0jf"]
 [ext_resource type="TileSet" uid="uid://bodklg5klc7vw" path="res://machines/simple_machines.tres" id="3_aekq4"]
 [ext_resource type="Texture2D" uid="uid://dionngwcf1sje" path="res://truck/truck_and_fillers.png" id="5_khxmr"]
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nwfln"]
-texture = ExtResource("2_84btv")
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_bocnk"]
+texture = ExtResource("3_5j0jf")
 texture_region_size = Vector2i(64, 64)
+1:0/size_in_atlas = Vector2i(1, 2)
+1:0/0 = 0
+0:0/size_in_atlas = Vector2i(1, 2)
 0:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_u4uko"]
 tile_size = Vector2i(64, 64)
-sources/0 = SubResource("TileSetAtlasSource_nwfln")
+sources/0 = SubResource("TileSetAtlasSource_bocnk")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_id03h"]
 texture = ExtResource("5_khxmr")
@@ -45,7 +48,11 @@ layer_0/tile_data = PackedInt32Array(131078, 0, 0, 131079, 0, 0, 8, 0, 4, 65544,
 [node name="bottle_tiles" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_u4uko")
 format = 2
+layer_0/name = "outline"
 layer_0/tile_data = PackedInt32Array(8, 0, 0, 131078, 0, 0, 196621, 0, 0, 131082, 0, 0, 393225, 0, 0, 393222, 0, 0)
+layer_1/name = "liquid"
+layer_1/z_index = 1
+layer_1/tile_data = PackedInt32Array()
 
 [node name="machine_tiles" type="TileMap" parent="."]
 tile_set = ExtResource("3_aekq4")
