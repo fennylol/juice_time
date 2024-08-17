@@ -9,15 +9,15 @@ var patterns: Dictionary = {
 	"truck" : TileMapPattern.new(),
 	"bottle_filler" : TileMapPattern.new()
 }
-enum {MIDDLE, START, END}
 
+## CONVEYOR DIRECTION HANDLING
+enum {MIDDLE, START, END}
 var TILES: Dictionary = {
 	Vector2i.RIGHT : [Vector2i(0,0), Vector2i(0,1),  Vector2i(0,2)],
 	Vector2i.DOWN  : [Vector2i(0,3), Vector2i(0,4),  Vector2i(0,5)],
 	Vector2i.LEFT  : [Vector2i(0,6), Vector2i(0,7),  Vector2i(0,8)],
 	Vector2i.UP    : [Vector2i(0,9), Vector2i(0,10), Vector2i(0,11)]
 }
-
 var DIR_FROM_TILE: Dictionary = {
 	Vector2i(-1,-1) : Vector2i.ZERO,
 	Vector2i(0,0) : Vector2i.RIGHT,
@@ -31,7 +31,32 @@ var DIR_FROM_TILE: Dictionary = {
 	Vector2i(0,8) : Vector2i.LEFT,
 	Vector2i(0,9) : Vector2i.UP,
 	Vector2i(0,10) : Vector2i.UP,
-	Vector2i(0,11) : Vector2i.UP 
+	Vector2i(0,11) : Vector2i.UP
+}
+
+## BOTTLE STUFF (RENAME LATER)
+enum {COLOR, POSITION}
+
+## MACHINE DICTIONARIES
+var MIXER_STATE: Dictionary = {
+	Vector2i.ZERO: {
+		"color1": Color.WHITE,
+		"color2": Color.BLACK,
+		"color1_filled": false,
+		"color2_filled": false
+	}
+}
+var FILLER_STATE: Dictionary = {
+	Vector2i.ZERO: {
+		"color": Color.WHITE
+	}
+}
+var KICKER_STATE: Dictionary = {
+	Vector2i.ZERO: {
+		"direction1": Vector2i.DOWN,
+		"direction2": Vector2i.LEFT,
+		"use_direction1": true
+	}
 }
 
 #region UTILITY
@@ -55,13 +80,46 @@ func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
 
 func process_world_tick():
-	## MOVE BOTTLES
+	var attempt_array = []
+	var successful_attempts = []
+	
+	## BOTTLE LOCATION CHECK LOOP
 	for pos in BOTTLE_TILES.get_used_cells(0):
+		## CHECK CONVEYOR DIRECTION UNDERNEATH AND CREATE ATTEMPT ARRAY
 		var conveyor_dir = DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)]
 		var new_pos = pos + conveyor_dir
-		# TODO: dont move if a bottle already occupies that pos
-		BOTTLE_TILES.erase_cell(0, pos)
-		BOTTLE_TILES.set_cell(0, new_pos, 0, Vector2.ZERO)
+		var new_attempt = [Color.WHITE, new_pos]
+		## CHECK NEXT TILE FOR A MACHINE
+		## IF MACHINE, PASS FUNCTIONALITY TO MACHINE
+		if MIXER_STATE.has(new_pos):
+			pass
+		elif FILLER_STATE.has(new_pos):
+			pass
+		elif KICKER_STATE.has(new_pos):
+			pass
+		else:
+			## ELSE, ADD BOTTLE LOCATION AND ARRAY TO "ATTEMPT" ARRAY
+			attempt_array.append(new_attempt)
+	
+	## CHECK ARRAY FOR DUPLICATES
+	for i in attempt_array.size():
+		var attempti = attempt_array[i]
+		var success = true
+		for j in attempt_array.size():
+			var attemptj = attempt_array[j]
+			if i == j: pass
+			elif attempti[POSITION] == attemptj[POSITION]:
+				success = false
+				break
+		if success:
+			successful_attempts.append(attempti)
+	
+	## CLEAR BOTTLES AND PLACE ARRAY
+	BOTTLE_TILES.clear()
+	for new_bottle in successful_attempts:
+		BOTTLE_TILES.set_cell(0, new_bottle[POSITION], 0, Vector2.ZERO)
+	
+	### LATER ###
 	
 	## SPAWN TRUCKS AND FILLERS
 	pass
