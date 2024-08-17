@@ -1,7 +1,8 @@
 extends Control
 
-signal input_pressed(type: String, global_m_pos: Vector2)
-
+signal attempt_conveyor(type: String, startpoint: Vector2i, endpoint: Vector2i)
+var planned_start: Vector2i
+var planned_end: Vector2i
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -10,10 +11,11 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if Input.is_action_pressed("use"):
-		var m_pos = get_global_mouse_position()
-		input_pressed.emit("use", m_pos)
+	if Input.is_action_just_pressed("use"):
+		planned_start = get_global_mouse_position()
 
-	if Input.is_action_pressed("cancel"):
-		var m_pos = get_global_mouse_position()
-		input_pressed.emit("cancel", m_pos)
+	if Input.is_action_just_released("use"):
+		planned_end = get_global_mouse_position()
+		attempt_conveyor.emit("use", planned_start, planned_end)
+
+

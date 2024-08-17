@@ -5,12 +5,12 @@ extends Node2D
 
 
 func _ready(): 
-	GUI.input_pressed.connect(forward_mous_position)
+	GUI.attempt_conveyor.connect(forward_attempt_conveyor)
 
 
-func forward_mous_position(type: String, pos: Vector2):
-	if type == "use": FACTORY_FLOOR.place_conveyors([pos] as Array[Vector2])
-	elif type == "cancel": FACTORY_FLOOR.erase_conveyor(pos)
+func forward_attempt_conveyor(type: String, startpoint: Vector2i, endpoint: Vector2i):
+	if type == "use": FACTORY_FLOOR.place_conveyors(startpoint, endpoint)
+	#elif type == "cancel": FACTORY_FLOOR.erase_conveyor(pos)
 
 func _process(delta):
 	pass

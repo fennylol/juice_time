@@ -17,7 +17,7 @@ sources/1 = SubResource("TileSetAtlasSource_nwfln")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_nbav7"]
 texture = ExtResource("5_dyra5")
-texture_region_size = Vector2i(32, 32)
+texture_region_size = Vector2i(64, 64)
 0:0/animation_columns = 4
 0:0/animation_speed = 8.0
 0:0/animation_frame_0/duration = 1.0
@@ -104,13 +104,14 @@ texture_region_size = Vector2i(32, 32)
 0:11/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_62pu6"]
-tile_size = Vector2i(32, 32)
+tile_size = Vector2i(64, 64)
 sources/0 = SubResource("TileSetAtlasSource_nbav7")
 
 [node name="FactoryFloor" type="Node2D"]
 script = ExtResource("1_worr6")
 
 [node name="conveyor_tiles" type="TileMap" parent="."]
+visible = false
 tile_set = ExtResource("1_i0p0l")
 format = 2
 
@@ -127,4 +128,4 @@ tile_set = SubResource("TileSet_62pu6")
 rendering_quadrant_size = 4
 collision_animatable = true
 format = 2
-layer_0/tile_data = PackedInt32Array(65537, 0, 0, 65538, 0, 0, 65539, 0, 2, 65536, 0, 1, 131076, 0, 3, 196612, 0, 5, 4, 0, 4, 65540, 0, 3, 262148, 0, 6, 262147, 0, 6, 262149, 0, 7, 262146, 0, 8, 196609, 0, 9, 131073, 0, 11, 262145, 0, 9, 327681, 0, 10)
+layer_0/tile_data = PackedInt32Array(65536, 0, 1)
