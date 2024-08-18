@@ -1,46 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://d1xyjg3y63hy6"]
+[gd_scene load_steps=4 format=3 uid="uid://d1xyjg3y63hy6"]
 
 [ext_resource type="Script" path="res://factory/factory_floor.gd" id="1_worr6"]
 [ext_resource type="TileSet" uid="uid://cdn72xl37w60f" path="res://conveyor/conveyor_animated.tres" id="2_pthvs"]
-[ext_resource type="TileSet" uid="uid://bodklg5klc7vw" path="res://machines/simple_machines.tres" id="3_aekq4"]
-[ext_resource type="Texture2D" uid="uid://ni3k4m1dai06" path="res://JUICE/bottle_small.png" id="4_ul7q5"]
-[ext_resource type="Texture2D" uid="uid://dnygcfua8vkim" path="res://truck/truck_and_filler.png" id="6_5eovy"]
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_413dw"]
-texture = ExtResource("4_ul7q5")
-texture_region_size = Vector2i(32, 32)
-0:0/size_in_atlas = Vector2i(1, 2)
-0:0/0 = 0
-1:0/size_in_atlas = Vector2i(1, 2)
-1:0/0 = 0
-
-[sub_resource type="TileSet" id="TileSet_u4uko"]
-tile_size = Vector2i(32, 32)
-sources/0 = SubResource("TileSetAtlasSource_413dw")
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ynqjf"]
-texture = ExtResource("6_5eovy")
-texture_region_size = Vector2i(32, 32)
-0:0/0 = 0
-1:0/0 = 0
-5:0/size_in_atlas = Vector2i(1, 2)
-5:0/0 = 0
-0:1/0 = 0
-1:1/0 = 0
-2:1/0 = 0
-3:1/0 = 0
-0:2/0 = 0
-1:2/0 = 0
-2:2/0 = 0
-3:2/0 = 0
-4:0/size_in_atlas = Vector2i(1, 2)
-4:0/0 = 0
-2:0/0 = 0
-3:0/0 = 0
-
-[sub_resource type="TileSet" id="TileSet_81ois"]
-tile_size = Vector2i(32, 32)
-sources/0 = SubResource("TileSetAtlasSource_ynqjf")
+[ext_resource type="TileSet" uid="uid://djyojdt0l70c6" path="res://tileset_master.tres" id="3_jenf4"]
 
 [node name="FactoryFloor" type="Node2D"]
 script = ExtResource("1_worr6")
@@ -50,18 +12,18 @@ tile_set = ExtResource("2_pthvs")
 rendering_quadrant_size = 4
 collision_animatable = true
 format = 2
-layer_0/tile_data = PackedInt32Array(262148, 0, 1, 262149, 0, 0, 262150, 0, 0, 262151, 0, 0, 262152, 0, 0, 262153, 0, 0, 262154, 0, 2, 131076, 0, 9, 196612, 0, 10, 393220, 0, 13, 327684, 0, 14)
+layer_0/tile_data = PackedInt32Array(262152, 0, 3)
 
 [node name="bottle_tiles" type="TileMap" parent="."]
-tile_set = SubResource("TileSet_u4uko")
+tile_set = ExtResource("3_jenf4")
 format = 2
 layer_0/name = "outline"
 
 [node name="machine_tiles" type="TileMap" parent="."]
-tile_set = ExtResource("3_aekq4")
+tile_set = ExtResource("3_jenf4")
 format = 2
 
 [node name="auto_tiles" type="TileMap" parent="."]
-tile_set = SubResource("TileSet_81ois")
+tile_set = ExtResource("3_jenf4")
 format = 2
-layer_0/tile_data = PackedInt32Array(0, 0, 0, 65536, 0, 1, 131072, 0, 2, 1, 65536, 0, 65537, 65536, 1, 131073, 65536, 2, 196608, 131072, 0, 262145, 196608, 1, 196609, 196608, 0, 262144, 131072, 1, 327680, 131072, 2, 327681, 196608, 2)
+layer_0/tile_data = PackedInt32Array(0, 0, 2, 65536, 0, 3, 131072, 0, 4, 1, 65536, 2, 65537, 65536, 3, 131073, 65536, 4, 262144, 131072, 3, 327680, 131072, 4, 262145, 196608, 3, 327681, 196608, 4)

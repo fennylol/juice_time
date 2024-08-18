@@ -50,14 +50,15 @@ var LAYER_COLOR_DICT = {}
 const TILE_ATLAS: Dictionary = {
 	"bottle"      : Vector2i(0,0),
 	"juice"       : Vector2i(1,0),
-	"generator"   : Vector2i(0,0),
-	"filler"      : Vector2i(4,0),
-	"filler_color": Vector2i(5,0),
-	"flipper"     : Vector2i(0,1),
-	"flipped"     : Vector2i(0,0),
-	"mixer"       : Vector2i(1,0),
-	"mixer_color0": Vector2i(0,0),
-	"mixer_color1": Vector2i(0,0),
+	"generator"   : Vector2i(2,0),
+	"filler"      : Vector2i(4,1),
+	"filler_color": Vector2i(4,3),
+	"flipper"     : Vector2i(2,1),
+	"mixer"       : Vector2i(2,2),
+	"mixer_color0": Vector2i(3,1),
+	"mixer_color1": Vector2i(3,0),
+	"mixer_color0_filled": Vector2i(3,2),
+	"mixer_color1_filled": Vector2i(4,0)
 }
 var patterns: Dictionary = {
 	"truck" : {
@@ -77,7 +78,9 @@ var patterns: Dictionary = {
 ## MACHINE STATE
 var GENERATOR_STATE: Dictionary = {
 	Vector2i.ZERO: {
-		"color" : NULL_BOTTLE_COLOR
+		"time_since_generation" : 0,
+		"time_out": 2,
+		"generation_odds": 0.75
 	}
 }
 var FILLER_STATE: Dictionary = {
@@ -87,17 +90,20 @@ var FILLER_STATE: Dictionary = {
 }
 var FLIPPER_STATE: Dictionary = {
 	Vector2i.ZERO: {
-		"direction1": Vector2i.DOWN,
-		"direction2": Vector2i.LEFT,
-		"use_direction1": true
+		"direction0": Vector2i.DOWN,
+		"direction1": Vector2i.LEFT,
+		"use_direction0": true,
+		"flipping_next": false,
+		"flipping_now": false
 	}
 }
 var MIXER_STATE: Dictionary = {
 	Vector2i.ZERO: {
+		"color0": NULL_BOTTLE_COLOR,
 		"color1": NULL_BOTTLE_COLOR,
-		"color2": NULL_BOTTLE_COLOR,
+		"color0_filled": false,
 		"color1_filled": false,
-		"color2_filled": false
+		"outputing": 0
 	}
 }
 var TRUCK_STATE: Dictionary = {
@@ -124,17 +130,21 @@ func _ready():
 	TRUCK_STATE.clear()
 
 	
-	var c1 = Color.PALE_TURQUOISE
+	var c1 = Color.MEDIUM_PURPLE
 	var c2 = Color.CORNFLOWER_BLUE
-	place_bottle_generator(c1, Vector2i(4,2))
-	place_bottle_generator(c2, Vector2i(4,6))
+	
+	place_bottle_generator(Vector2i(4,2))
+	place_bottle_generator(Vector2i(4,8))
 	place_bottle_filler(c1, Vector2i(2,2))
-	place_truck(c2, Vector2i(10,7))
-	place_mixer(c1, c2, Vector2(4,4))
+	place_bottle_filler(c2, Vector2i(8,8))
+	place_truck(mix_colors(c1, c2), Vector2i(10,7))
+	place_mixer(c1, c2, Vector2(4,5))
 	place_flipper(Vector2i.DOWN, Vector2i(8,4))
 
 func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
+
+func mix_colors(c0: Color, c1: Color) -> Color: return c0.blend(Color(c1, c1.a * 0.5))
 
 ## GIVEN A TILEMAP POSITION "POS", RETURN THE BOTTLE AT THAT POSITION'S JUICE COLOR
 func find_color_from_pos(pos: Vector2i) -> Color:
@@ -162,6 +172,16 @@ func process_world_tick():
 	var attempt_array = []
 	var successful_attempts = []
 	
+	## CLEAR MIXER INDICATORS IF OUTPUTTING BOTTLE
+	for pos in MIXER_STATE:
+		var mixer = MIXER_STATE[pos]
+		if mixer["outputting"]:
+			MACHINE_TILES.erase_cell(find_layer_from_color(mixer["color0"]), pos)
+			MACHINE_TILES.erase_cell(find_layer_from_color(mixer["color1"]), pos)
+			mixer["outputting"] = false
+	
+	
+	
 	## BOTTLE LOCATION CHECK LOOP
 	for pos in BOTTLE_TILES.get_used_cells(0):
 		
@@ -176,15 +196,25 @@ func process_world_tick():
 		if MIXER_STATE.has(new_pos):
 			var mixer = MIXER_STATE[new_pos]
 			var bottle_color = find_color_from_pos(pos)
-			## VERIFY THAT THE INPUT COLOR IS CORRECT
-			if bottle_color == mixer["color1"] and not mixer["color1_filled"]: mixer["color1_filled"] = true
-			elif bottle_color == mixer["color2"] and not mixer["color2_filled"]: mixer["color2_filled"] = true
-			## PLACE MIXED COLOR
-			if mixer["color1_filled"] and mixer["color2_filled"]:
-				var output_color = mixer["color1"].blend(Color(mixer["color2"], mixer["color2"].a * 0.5))
+			var c0: Color = mixer["color0"]
+			var c1: Color = mixer["color1"]
+			
+			## FILL MIXER IF COLOR IS NEEDED
+			if bottle_color == c0 and not mixer["color0_filled"]: 
+				mixer["color0_filled"] = true
+				MACHINE_TILES.set_cell(find_layer_from_color(c0), new_pos, 1, TILE_ATLAS["mixer_color0"])
+			elif bottle_color == c1 and not mixer["color1_filled"]: 
+				mixer["color1_filled"] = true
+				MACHINE_TILES.set_cell(find_layer_from_color(c1), new_pos, 2, TILE_ATLAS["mixer_color1"])
+			
+			## PLACE MIXED COLOR WHEN ALL INPUTS FILLED
+			if mixer["color0_filled"] and mixer["color1_filled"]:
+				var output_color = mix_colors(c0, c1)
 				attempt_array.append([output_color,new_pos])
+				mixer["color0_filled"] = false
 				mixer["color1_filled"] = false
-				mixer["color2_filled"] = false
+				mixer["outtputting"] = true
+				
 			
 		elif FILLER_STATE.has(new_pos):
 			## FILLERS REPLACE BOTTLE WITH A BOTTLE OF THE FILLER'S COLOR
@@ -195,11 +225,7 @@ func process_world_tick():
 		elif FLIPPER_STATE.has(new_pos):
 			## ATTEMPT BOTTLE MOVE AND TOGGLE FLIPPER
 			attempt_array.append(new_attempt)
-			FLIPPER_STATE[new_pos]["use_direction1"] = !FLIPPER_STATE[new_pos]["use_direction1"]
-			## SET DIRECTION OF UNDERLYING BELT
-			var direction = FLIPPER_STATE[new_pos]["direction1"] if FLIPPER_STATE[new_pos]["use_direction1"] else FLIPPER_STATE[new_pos]["direction2"]
-			var tile = CONVEYOR_ATLAS[direction][MIDDLE]
-			CONVEYOR_TILES.set_cell(0, new_pos, conveyor_source, tile)
+			FLIPPER_STATE[new_pos]["flipping_next"] = true
 			
 		else:
 			for truck in TRUCK_STATE.keys():
@@ -213,10 +239,13 @@ func process_world_tick():
 			attempt_array.append(new_attempt)
 	
 	## ADD BOTTLE FROM BOTTLE GENERATORS
-	for gen_loc in GENERATOR_STATE.keys():
-		var gen_color = GENERATOR_STATE[gen_loc]["color"]
-		var new_attempt = [gen_color, gen_loc]
-		attempt_array.append(new_attempt)
+	for pos in GENERATOR_STATE.keys(): 
+		var genny = GENERATOR_STATE[pos]
+		if genny["time_since_generation"] >= genny["time_out"]:
+			if randf() <= genny["generation_odds"]:
+				attempt_array.append([NULL_BOTTLE_COLOR, pos])
+				genny["time_since_generation"] = -1
+		genny["time_since_generation"] += 1
 	
 	## CHECK ATTEMPT ARRAY FOR DUPLICATES.
 	## ANY NON-DUPLICATES ARE ADDED TO "SUCCESSFUL_ATTEMPTS"
@@ -237,13 +266,28 @@ func process_world_tick():
 	for new_bottle in successful_attempts:
 		var layer_index = find_layer_from_color(new_bottle[COLOR])
 		BOTTLE_TILES.set_cell(0, new_bottle[POSITION], bottle_source, TILE_ATLAS["bottle"])
-		BOTTLE_TILES.set_cell(layer_index, new_bottle[POSITION], bottle_source, TILE_ATLAS["juice"])
+		if new_bottle[COLOR] != NULL_BOTTLE_COLOR:
+			BOTTLE_TILES.set_cell(layer_index, new_bottle[POSITION], bottle_source, TILE_ATLAS["juice"])
+	
+	## FLIP FLIPPERS IF FLIPPING
+	for pos in FLIPPER_STATE:
+		var flipper = FLIPPER_STATE[pos]
+		if flipper["flipping_now"]:
+			flipper["use_direction0"] = !flipper["use_direction0"]
+			var direction = FLIPPER_STATE[pos]["direction0"] if FLIPPER_STATE[pos]["use_direction0"] else FLIPPER_STATE[pos]["direction1"]
+			var tile = CONVEYOR_ATLAS[direction][MIDDLE]
+			CONVEYOR_TILES.set_cell(0, pos, conveyor_source, tile)
+			flipper["flipping_now"] = false
+		if flipper["flipping_next"]:
+			flipper["flipping_now"] = true
+			flipper["flipping_next"] = false
 	
 	## SPAWN TRUCKS AND FILLERS
 	pass
 	
 	## EARN INCOME??
 	pass
+	
 
 #endregion
 #region CONVEYORS
@@ -293,11 +337,13 @@ func place_machine(pos: Vector2i, tile: int):
 	#i mean its pretty self explanitory
 	pass
 
-func place_bottle_generator(c: Color, pos: Vector2i):
+func place_bottle_generator(pos: Vector2i):
 	MACHINE_TILES.set_cell(0, pos, auto_tiles_source, TILE_ATLAS["generator"])
 	var new_dict_entry = {
 		pos: {
-			"color": c
+			"time_since_generation" : 0,
+			"time_out": 0,
+			"generation_odds": 1
 		}
 	}
 	GENERATOR_STATE.merge(new_dict_entry)
@@ -316,9 +362,11 @@ func place_flipper(d: Vector2i, pos: Vector2i):
 	MACHINE_TILES.set_cell(0, pos, machine_source, TILE_ATLAS["flipper"])
 	var new_dict_entry = {
 		pos: {
-			"direction1": DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)],
-			"direction2": d,
-			"use_direction1": true
+			"direction0": DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)],
+			"direction1": d,
+			"use_direction0": true,
+			"flipping_now": false,
+			"flipping_next": false
 		}
 	}
 	FLIPPER_STATE.merge(new_dict_entry)
@@ -329,10 +377,11 @@ func place_mixer(c1: Color, c2: Color, pos: Vector2i):
 	# TODO: set LEDs
 	var new_dict_entry = {
 		pos: {
-			"color1": c1,
-			"color2": c2,
+			"color0": c1,
+			"color1": c2,
+			"color0_filled": false,
 			"color1_filled": false,
-			"color2_filled": false
+			"outputting": false
 		}
 	}
 	MIXER_STATE.merge(new_dict_entry)

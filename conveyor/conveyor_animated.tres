@@ -4,7 +4,7 @@
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cybam"]
 texture = ExtResource("1_vtoaq")
-texture_region_size = Vector2i(32, 32)
+texture_region_size = Vector2i(128, 128)
 0:0/animation_columns = 4
 0:0/animation_speed = 4.0
 0:0/animation_frame_0/duration = 1.0
@@ -68,13 +68,6 @@ texture_region_size = Vector2i(32, 32)
 0:8/animation_frame_2/duration = 1.0
 0:8/animation_frame_3/duration = 1.0
 0:8/0 = 0
-0:9/animation_columns = 4
-0:9/animation_speed = 4.0
-0:9/animation_frame_0/duration = 1.0
-0:9/animation_frame_1/duration = 1.0
-0:9/animation_frame_2/duration = 1.0
-0:9/animation_frame_3/duration = 1.0
-0:9/0 = 0
 0:10/animation_columns = 4
 0:10/animation_speed = 4.0
 0:10/animation_frame_0/duration = 1.0
@@ -117,7 +110,14 @@ texture_region_size = Vector2i(32, 32)
 0:15/animation_frame_2/duration = 1.0
 0:15/animation_frame_3/duration = 1.0
 0:15/0 = 0
+0:9/animation_columns = 4
+0:9/animation_speed = 4.0
+0:9/animation_frame_0/duration = 1.0
+0:9/animation_frame_1/duration = 1.0
+0:9/animation_frame_2/duration = 1.0
+0:9/animation_frame_3/duration = 1.0
+0:9/0 = 0
 
 [resource]
-tile_size = Vector2i(32, 32)
+tile_size = Vector2i(128, 128)
 sources/0 = SubResource("TileSetAtlasSource_cybam")

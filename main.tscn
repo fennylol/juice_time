@@ -10,3 +10,7 @@ script = ExtResource("1_fc0st")
 [node name="Gui" parent="." instance=ExtResource("2_am4hy")]
 
 [node name="FactoryFloor" parent="." instance=ExtResource("2_8sjmw")]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(1108, 846)
+zoom = Vector2(0.5, 0.5)
