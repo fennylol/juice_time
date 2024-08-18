@@ -83,7 +83,8 @@ func _ready():
 	KICKER_STATE.clear()
 	GENERATOR_STATE.clear()
 	
-	spawn_bottle_generator()
+	spawn_bottle_generator(Color.PALE_VIOLET_RED, Vector2i(4,2))
+	spawn_bottle_generator(Color.PALE_TURQUOISE, Vector2i(4,6))
 	spawn_bottle_filler()
 	spawn_truck()
 
@@ -99,7 +100,13 @@ func process_world_tick():
 		## CHECK CONVEYOR DIRECTION UNDERNEATH AND CREATE ATTEMPT ARRAY
 		var conveyor_dir = DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)]
 		var new_pos = pos + conveyor_dir
+		
 		var new_attempt = [Color.WHITE, new_pos]
+		### CHECK EACH LIQUID LAYER FOR A POSITION MATCH
+		for layer in range(1, BOTTLE_TILES.get_layers_count()):
+			if BOTTLE_TILES.get_used_cells(layer).has(pos):
+				new_attempt[COLOR] = BOTTLE_TILES.get_layer_modulate(layer)
+		
 		## CHECK NEXT TILE FOR A MACHINE
 		## IF MACHINE, PASS FUNCTIONALITY TO MACHINE
 		if MIXER_STATE.has(new_pos):
@@ -131,13 +138,28 @@ func process_world_tick():
 		if success:
 			successful_attempts.append(attempti)
 	
-	## CLEAR BOTTLES AND PLACE ARRAY
+	## CLEAR BOTTLES, RESET LAYER COUNT, AND PLACE ARRAY
 	BOTTLE_TILES.clear()
+	while BOTTLE_TILES.get_layers_count() > 1: BOTTLE_TILES.remove_layer(1)
+	
+	var color_dict = {}
 	for new_bottle in successful_attempts:
+		var layer_index: int
+		
+		if color_dict.has(new_bottle[COLOR]):
+			layer_index = color_dict[new_bottle[COLOR]]
+		else:
+			layer_index = color_dict.keys().size()+1
+			color_dict[new_bottle[COLOR]] = layer_index
+			BOTTLE_TILES.add_layer(layer_index)
+		
 		BOTTLE_TILES.set_cell(0, new_bottle[POSITION], 0, Vector2.ZERO)
-		BOTTLE_TILES.set_cell(1, new_bottle[POSITION], 0, Vector2(1,0))
-		var cell_data = BOTTLE_TILES.get_cell_tile_data(1, new_bottle[POSITION])
-		cell_data.modulate = new_bottle[COLOR]
+		BOTTLE_TILES.set_cell(layer_index, new_bottle[POSITION], 0, Vector2(1,0))
+		
+		#var cell_data = BOTTLE_TILES.get_cell_tile_data(layer_index, new_bottle[POSITION])
+		BOTTLE_TILES.set_layer_modulate(layer_index, new_bottle[COLOR])
+		pass
+
 	
 	### LATER ###
 	
@@ -190,9 +212,7 @@ func place_machine(pos: Vector2i, tile: int):
 #endregion
 #region TRUCKS AND FILLERS
 
-func spawn_bottle_generator():
-	var spawn_location = Vector2i(4,2)
-	var generator_color = Color.PALE_VIOLET_RED
+func spawn_bottle_generator(generator_color: Color, spawn_location : Vector2i):
 	TRUCK_AND_FILLERS.set_cell(0, spawn_location, 0, Vector2i(2,2))
 	var new_dict_entry = {
 		spawn_location: {
