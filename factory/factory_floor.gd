@@ -58,6 +58,11 @@ var KICKER_STATE: Dictionary = {
 		"use_direction1": true
 	}
 }
+var GENERATOR_STATE: Dictionary = {
+	Vector2i.ZERO: {
+		"color" : Color.WHITE
+	}
+}
 
 #region UTILITY
 
@@ -73,6 +78,12 @@ func _ready():
 	for pos in filler_poss:
 		TRUCK_AND_FILLERS.erase_cell(0, pos)
 	
+	MIXER_STATE.clear()
+	FILLER_STATE.clear()
+	KICKER_STATE.clear()
+	GENERATOR_STATE.clear()
+	
+	spawn_bottle_generator()
 	spawn_bottle_filler()
 	spawn_truck()
 
@@ -101,6 +112,12 @@ func process_world_tick():
 			## ELSE, ADD BOTTLE LOCATION AND ARRAY TO "ATTEMPT" ARRAY
 			attempt_array.append(new_attempt)
 	
+	## ADD BOTTLE FROM BOTTLE GENERATORS
+	for gen_loc in GENERATOR_STATE.keys():
+		var gen_color = GENERATOR_STATE.get(gen_loc).get("color")
+		var new_attempt = [gen_color, gen_loc]
+		attempt_array.append(new_attempt)
+	
 	## CHECK ARRAY FOR DUPLICATES
 	for i in attempt_array.size():
 		var attempti = attempt_array[i]
@@ -118,6 +135,9 @@ func process_world_tick():
 	BOTTLE_TILES.clear()
 	for new_bottle in successful_attempts:
 		BOTTLE_TILES.set_cell(0, new_bottle[POSITION], 0, Vector2.ZERO)
+		BOTTLE_TILES.set_cell(1, new_bottle[POSITION], 0, Vector2(1,0))
+		var cell_data = BOTTLE_TILES.get_cell_tile_data(1, new_bottle[POSITION])
+		cell_data.modulate = new_bottle[COLOR]
 	
 	### LATER ###
 	
@@ -171,7 +191,15 @@ func place_machine(pos: Vector2i, tile: int):
 #region TRUCKS AND FILLERS
 
 func spawn_bottle_generator():
-	pass
+	var spawn_location = Vector2i(4,2)
+	var generator_color = Color.PALE_VIOLET_RED
+	TRUCK_AND_FILLERS.set_cell(0, spawn_location, 0, Vector2i(2,2))
+	var new_dict_entry = {
+		spawn_location: {
+			"color": generator_color
+		}
+	}
+	GENERATOR_STATE.merge(new_dict_entry)
 
 func spawn_bottle_filler():
 	var spawn_location = Vector2i(2,2)

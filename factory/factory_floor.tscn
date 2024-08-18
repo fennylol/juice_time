@@ -43,7 +43,7 @@ tile_set = ExtResource("2_pthvs")
 rendering_quadrant_size = 4
 collision_animatable = true
 format = 2
-layer_0/tile_data = PackedInt32Array(131078, 0, 0, 131079, 0, 0, 8, 0, 4, 65544, 0, 3, 131082, 0, 6, 131081, 0, 6, 393220, 0, 0, 393221, 0, 0, 393222, 0, 0, 393223, 0, 0, 393225, 0, 6, 393224, 0, 6)
+layer_0/tile_data = PackedInt32Array(131078, 0, 0, 131079, 0, 2, 8, 0, 4, 65544, 0, 5, 131082, 0, 7, 131081, 0, 8, 393220, 0, 1, 393221, 0, 0, 393222, 0, 0, 393223, 0, 2, 393225, 0, 7, 393224, 0, 8, 131077, 0, 0, 131076, 0, 1)
 
 [node name="bottle_tiles" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_u4uko")
