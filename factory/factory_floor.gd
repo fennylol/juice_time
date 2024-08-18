@@ -192,13 +192,24 @@ func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 	## SET INITIAL POSITION AND TARGET POSITION
 	var curr_pos: Vector2i = start_pos
 	var target_pos = Vector2i(start_pos.x, end_pos.y) if direction == Vector2i.UP or direction == Vector2i.DOWN else Vector2i(end_pos.x, start_pos.y)
+	var add_one_to_target = target_pos + direction
 	
-	## TODO: detect existing tiles
-	while curr_pos != target_pos:
-		var tile: Vector2i = TILES[direction][START if curr_pos == start_pos else MIDDLE]
-		CONVEYOR_TILES.set_cell(0, curr_pos, source, tile)
-		curr_pos += direction
-	CONVEYOR_TILES.set_cell(0, target_pos, source, TILES[direction][END])
+	## CHECK EACH TILE BETWEEN START AND TARGET POSITION, INCLUSIVE
+	## (STOP CHECKING IF YOU ARE ONE TILE PAST TARGET_POS)
+	while curr_pos != add_one_to_target:
+		var tile: Vector2i = TILES[direction][START if curr_pos == start_pos else END if curr_pos == target_pos else MIDDLE]
+		## KEEP ADDING NEW TILES AS LONG AS THERE IS NO TILE ALREADY THERE
+		if CONVEYOR_TILES.get_cell_source_id(0,curr_pos) == -1:
+			CONVEYOR_TILES.set_cell(0, curr_pos, source, tile)
+			curr_pos += direction
+		else:
+			## IF YOU FIND AN EXTANT TILE, GO BACK ONE, SET AN "END" TILE, AND BREAK THE LOOP
+			## DO THIS ONLY IF YOU HAVE ALREADY PLACED AT LEAST ONE TILE
+			if curr_pos != start_pos:
+				curr_pos -= direction
+				tile = TILES[direction][END]
+				CONVEYOR_TILES.set_cell(0, curr_pos, source, tile)
+			break
 
 func erase_conveyor(global_pos: Vector2):
 	var pos = CONVEYOR_TILES.local_to_map(global_pos)
