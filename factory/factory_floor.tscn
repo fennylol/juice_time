@@ -14,6 +14,11 @@ collision_animatable = true
 format = 2
 layer_0/tile_data = PackedInt32Array(262152, 0, 3)
 
+[node name="auto_tiles" type="TileMap" parent="."]
+tile_set = ExtResource("3_jenf4")
+format = 2
+layer_0/tile_data = PackedInt32Array(0, 0, 2, 65536, 0, 3, 131072, 0, 4, 1, 65536, 2, 65537, 65536, 3, 131073, 65536, 4, 262144, 131072, 3, 327680, 131072, 4, 262145, 196608, 3, 327681, 196608, 4)
+
 [node name="bottle_tiles" type="TileMap" parent="."]
 tile_set = ExtResource("3_jenf4")
 format = 2
@@ -22,8 +27,3 @@ layer_0/name = "outline"
 [node name="machine_tiles" type="TileMap" parent="."]
 tile_set = ExtResource("3_jenf4")
 format = 2
-
-[node name="auto_tiles" type="TileMap" parent="."]
-tile_set = ExtResource("3_jenf4")
-format = 2
-layer_0/tile_data = PackedInt32Array(0, 0, 2, 65536, 0, 3, 131072, 0, 4, 1, 65536, 2, 65537, 65536, 3, 131073, 65536, 4, 262144, 131072, 3, 327680, 131072, 4, 262145, 196608, 3, 327681, 196608, 4)

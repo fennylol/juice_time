@@ -243,7 +243,7 @@ func process_world_tick():
 		var genny = GENERATOR_STATE[pos]
 		if genny["time_since_generation"] >= genny["time_out"]:
 			if randf() <= genny["generation_odds"]:
-				attempt_array.append([NULL_BOTTLE_COLOR, pos])
+				attempt_array.append([NULL_BOTTLE_COLOR, pos + Vector2i.DOWN])
 				genny["time_since_generation"] = -1
 		genny["time_since_generation"] += 1
 	
@@ -304,7 +304,7 @@ func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 							  Vector2i.UP if abs(diff.x) <= abs(diff.y) and diff.y < 0 else \
 							  Vector2i.DOWN
 	
-	## SET INITIAL POSITION AND TARGET POSITION
+	## SET INITIAflipper["use_direction0"] = !flipper["use_direction0"]L POSITION AND TARGET POSITION
 	var curr_pos: Vector2i = start_pos
 	var target_pos = Vector2i(start_pos.x, end_pos.y) if direction == Vector2i.UP or direction == Vector2i.DOWN else Vector2i(end_pos.x, start_pos.y)
 	var add_one_to_target = target_pos + direction
@@ -312,9 +312,16 @@ func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 	## CHECK EACH TILE BETWEEN START AND TARGET POSITION, INCLUSIVE
 	## (STOP CHECKING IF YOU ARE ONE TILE PAST TARGET_POS)
 	while curr_pos != add_one_to_target:
-		var tile: Vector2i = CONVEYOR_ATLAS[direction][START if curr_pos == start_pos else END if curr_pos == target_pos else MIDDLE]
+		var tile: Vector2i = CONVEYOR_ATLAS[direction][SOLO if start_pos == target_pos else START if curr_pos == start_pos else END if curr_pos == target_pos else MIDDLE]
+		
 		## KEEP ADDING NEW TILES AS LONG AS THERE IS NO TILE ALREADY THERE
-		if CONVEYOR_TILES.get_cell_source_id(0,curr_pos) == -1:
+		var tile_is_unblocked = true
+		for truck in TRUCK_STATE.keys():
+			if TRUCK_STATE[truck]["area"].has(curr_pos):
+				tile_is_unblocked = false
+		for generator in GENERATOR_STATE.keys():
+			if generator == curr_pos: tile_is_unblocked = false 
+		if CONVEYOR_TILES.get_cell_source_id(0,curr_pos) == -1 and tile_is_unblocked:
 			CONVEYOR_TILES.set_cell(0, curr_pos, conveyor_source, tile)
 			curr_pos += direction
 		else:
@@ -322,7 +329,7 @@ func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 			## DO THIS ONLY IF YOU HAVE ALREADY PLACED AT LEAST ONE TILE
 			if curr_pos != start_pos:
 				curr_pos -= direction
-				tile = CONVEYOR_ATLAS[direction][END]
+				tile = CONVEYOR_ATLAS[direction][SOLO if start_pos == curr_pos else END]
 				CONVEYOR_TILES.set_cell(0, curr_pos, conveyor_source, tile)
 			break
 
