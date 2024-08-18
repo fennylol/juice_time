@@ -36,6 +36,7 @@ var DIR_FROM_TILE: Dictionary = {
 
 ## BOTTLE STUFF (RENAME LATER)
 enum {COLOR, POSITION}
+const NULL_BOTTLE_COLOR = Color.BLACK
 
 ## MACHINE DICTIONARIES
 var MIXER_STATE: Dictionary = {
@@ -91,6 +92,12 @@ func _ready():
 func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
 
+func find_color_at_pos(pos: Vector2i) -> Color:
+	for layer in range(1, BOTTLE_TILES.get_layers_count()):
+		if BOTTLE_TILES.get_used_cells(layer).has(pos):
+			return BOTTLE_TILES.get_layer_modulate(layer)
+	return NULL_BOTTLE_COLOR
+
 func process_world_tick():
 	var attempt_array = []
 	var successful_attempts = []
@@ -101,11 +108,7 @@ func process_world_tick():
 		var conveyor_dir = DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)]
 		var new_pos = pos + conveyor_dir
 		
-		var new_attempt = [Color.WHITE, new_pos]
-		### CHECK EACH LIQUID LAYER FOR A POSITION MATCH
-		for layer in range(1, BOTTLE_TILES.get_layers_count()):
-			if BOTTLE_TILES.get_used_cells(layer).has(pos):
-				new_attempt[COLOR] = BOTTLE_TILES.get_layer_modulate(layer)
+		var new_attempt = [find_color_at_pos(pos), new_pos]
 		
 		## CHECK NEXT TILE FOR A MACHINE
 		## IF MACHINE, PASS FUNCTIONALITY TO MACHINE
