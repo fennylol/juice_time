@@ -86,12 +86,13 @@ func _ready():
 	
 	spawn_bottle_generator(Color.PALE_VIOLET_RED, Vector2i(4,2))
 	spawn_bottle_generator(Color.PALE_TURQUOISE, Vector2i(4,6))
-	spawn_bottle_filler()
-	spawn_truck()
+	spawn_bottle_filler(Color.PALE_TURQUOISE, Vector2i(2,2))
+	spawn_truck(Color.PALE_VIOLET_RED, Vector2i(10,7))
 
 func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
 
+## GIVEN A TILEMAP POSITION "POS", RETURN THE BOTTLE AT THAT POSITION'S JUICE COLOR
 func find_color_at_pos(pos: Vector2i) -> Color:
 	for layer in range(1, BOTTLE_TILES.get_layers_count()):
 		if BOTTLE_TILES.get_used_cells(layer).has(pos):
@@ -99,15 +100,17 @@ func find_color_at_pos(pos: Vector2i) -> Color:
 	return NULL_BOTTLE_COLOR
 
 func process_world_tick():
+	## CREATE ATTEMPT ARRAYS. 
+	## THESE WILL BE FILLED WITH VECTOR2I POSITIONS OF WHERE THE BOTTLES SHOULD BE MOVING TO
 	var attempt_array = []
 	var successful_attempts = []
 	
 	## BOTTLE LOCATION CHECK LOOP
 	for pos in BOTTLE_TILES.get_used_cells(0):
-		## CHECK CONVEYOR DIRECTION UNDERNEATH AND CREATE ATTEMPT ARRAY
+		
+		## CHECK CONVEYOR DIRECTION UNDERNEATH AND CREATE A NEW ATTEMPT AT "NEXT POSITION"
 		var conveyor_dir = DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)]
 		var new_pos = pos + conveyor_dir
-		
 		var new_attempt = [find_color_at_pos(pos), new_pos]
 		
 		## CHECK NEXT TILE FOR A MACHINE
@@ -119,7 +122,7 @@ func process_world_tick():
 		elif KICKER_STATE.has(new_pos):
 			pass
 		else:
-			## ELSE, ADD BOTTLE LOCATION AND ARRAY TO "ATTEMPT" ARRAY
+			## ELSE, ADD BOTTLE LOCATION AND COLOR TO "ATTEMPT" ARRAY
 			attempt_array.append(new_attempt)
 	
 	## ADD BOTTLE FROM BOTTLE GENERATORS
@@ -128,7 +131,8 @@ func process_world_tick():
 		var new_attempt = [gen_color, gen_loc]
 		attempt_array.append(new_attempt)
 	
-	## CHECK ARRAY FOR DUPLICATES
+	## CHECK ATTEMPT ARRAY FOR DUPLICATES.
+	## ANY NON-DUPLICATES ARE ADDED TO "SUCCESSFUL_ATTEMPTS"
 	for i in attempt_array.size():
 		var attempti = attempt_array[i]
 		var success = true
@@ -141,10 +145,11 @@ func process_world_tick():
 		if success:
 			successful_attempts.append(attempti)
 	
-	## CLEAR BOTTLES, RESET LAYER COUNT, AND PLACE ARRAY
+	## CLEAR BOTTLE TILEMAP, RESET LAYER COUNT
 	BOTTLE_TILES.clear()
 	while BOTTLE_TILES.get_layers_count() > 1: BOTTLE_TILES.remove_layer(1)
 	
+	## CREATE A UNIQUE LAYER WITHIN THE BOTTLE TILEMAP FOR EACH UNIQUE BOTTLE COLOR
 	var color_dict = {}
 	for new_bottle in successful_attempts:
 		var layer_index: int
@@ -156,22 +161,16 @@ func process_world_tick():
 			color_dict[new_bottle[COLOR]] = layer_index
 			BOTTLE_TILES.add_layer(layer_index)
 		
+		## PLACE ALL SUCCESSFUL BOTTLE ATTEMPTS AND SET THEIR COLORS
 		BOTTLE_TILES.set_cell(0, new_bottle[POSITION], 0, Vector2.ZERO)
 		BOTTLE_TILES.set_cell(layer_index, new_bottle[POSITION], 0, Vector2(1,0))
-		
-		#var cell_data = BOTTLE_TILES.get_cell_tile_data(layer_index, new_bottle[POSITION])
 		BOTTLE_TILES.set_layer_modulate(layer_index, new_bottle[COLOR])
-		pass
-
-	
-	### LATER ###
 	
 	## SPAWN TRUCKS AND FILLERS
 	pass
 	
 	## EARN INCOME??
 	pass
-
 
 #endregion
 #region CONVEYORS
@@ -215,21 +214,19 @@ func place_machine(pos: Vector2i, tile: int):
 #endregion
 #region TRUCKS AND FILLERS
 
-func spawn_bottle_generator(generator_color: Color, spawn_location : Vector2i):
-	TRUCK_AND_FILLERS.set_cell(0, spawn_location, 0, Vector2i(2,2))
+func spawn_bottle_generator(c: Color, l: Vector2i):
+	TRUCK_AND_FILLERS.set_cell(0, l, 0, Vector2i(2,2))
 	var new_dict_entry = {
-		spawn_location: {
-			"color": generator_color
+		l: {
+			"color": c
 		}
 	}
 	GENERATOR_STATE.merge(new_dict_entry)
 
-func spawn_bottle_filler():
-	var spawn_location = Vector2i(2,2)
-	TRUCK_AND_FILLERS.set_pattern(0, spawn_location, patterns["bottle_filler"])
+func spawn_bottle_filler(c: Color, l: Vector2i):
+	TRUCK_AND_FILLERS.set_pattern(0, l, patterns["bottle_filler"])
 
-func spawn_truck(c: Color = Color.WHITE):
-	var spawn_location = Vector2i(10,7)
-	TRUCK_AND_FILLERS.set_pattern(0, spawn_location, patterns["truck"])
+func spawn_truck(c: Color, l: Vector2i):
+	TRUCK_AND_FILLERS.set_pattern(0, l, patterns["truck"])
 
 #endregion
