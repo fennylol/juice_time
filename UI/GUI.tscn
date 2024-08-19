@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://fusfeda558pl"]
+[gd_scene load_steps=3 format=3 uid="uid://fusfeda558pl"]
 
 [ext_resource type="Script" path="res://UI/GUI.gd" id="1_yr1bh"]
+[ext_resource type="PackedScene" uid="uid://dy7ghhq8786te" path="res://menuing/main_menu.tscn" id="2_bt2y0"]
 
 [node name="Gui" type="Control"]
 layout_mode = 3
@@ -10,3 +11,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yr1bh")
+
+[node name="MainMenu" parent="." instance=ExtResource("2_bt2y0")]
+layout_mode = 1

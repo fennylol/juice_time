@@ -1,5 +1,7 @@
 extends Control
 
+@onready var main_menu = $MainMenu
+
 signal attempt_conveyor(type: String, startpoint: Vector2i, endpoint: Vector2i)
 signal attempt_machine(type: String, point: Vector2i)
 
@@ -36,3 +38,7 @@ func _process(delta):
 
 func update_cash_display(cash: float):
 	pass
+
+#func toggle_main_menu():
+	#if main_menu.visible: main_menu.hide()
+	#else: main_menu.show()

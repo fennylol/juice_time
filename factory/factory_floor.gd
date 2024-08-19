@@ -9,8 +9,8 @@ const CASH_PER_TRUCK = 10
 
 ## TRUCK TIMING AND LOSE CONDITION HANDLING
 signal loose_the_game(failed_truck_point: Vector2i)
-var seconds_to_warn = 30
-var seconds_to_loose = 60
+var seconds_to_warn = 1200
+var seconds_to_loose = 4000
 
 ## TILEMAP SOURCES
 var conveyor_source = 0

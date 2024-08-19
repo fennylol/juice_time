@@ -1,7 +1,8 @@
 extends Node2D
 
 var cash: float = 500
-@onready var GUI = $Gui
+@onready var canvaslayer = $CanvasLayer
+@onready var GUI = $CanvasLayer/Gui
 @onready var FACTORY_FLOOR = $FactoryFloor
 
 @onready var CAMERA = $Camera2D
@@ -13,6 +14,7 @@ const MIN_CAM_ZOOM = 1.5
 var MAX_CAM_ZOOM = 0.25
 var target_zoom: float = 0.5
 
+var game_paused = true
 var time_since_tick = 0
 var TICK_LENGTH_IN_SECONDS = 1
 
@@ -30,6 +32,16 @@ func forward_attempt_machine(type: String, point: Vector2i):
 	FACTORY_FLOOR.place_machine(type, point)
 
 func _process(delta):
+	if Input.is_action_just_pressed("pause"):
+		game_paused = not game_paused
+		if game_paused: 
+			GUI.mouse_filter = 0
+		else: 
+			canvaslayer.hide()
+			
+	
+	if game_paused: return
+	
 	if Input.is_action_just_released("cancel"): 
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		Input.warp_mouse(mouse_point) 
