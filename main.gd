@@ -20,6 +20,7 @@ func _ready():
 	GUI.attempt_conveyor.connect(forward_attempt_conveyor)
 	GUI.attempt_machine.connect(forward_attempt_machine)
 	FACTORY_FLOOR.income_earned.connect(earn_cash)
+	FACTORY_FLOOR.loose_the_game.connect(on_game_loose)
 	target_point = CAMERA.position
 
 func forward_attempt_conveyor(type: String, startpoint: Vector2i, endpoint: Vector2i):
@@ -49,7 +50,7 @@ func _process(delta):
 	time_since_tick += delta
 	if time_since_tick > TICK_LENGTH_IN_SECONDS: 
 		time_since_tick -= TICK_LENGTH_IN_SECONDS
-		FACTORY_FLOOR.process_world_tick()
+		FACTORY_FLOOR.process_world_tick(TICK_LENGTH_IN_SECONDS)
 
 func earn_cash(amount: float):
 	cash += amount
@@ -63,3 +64,6 @@ func _input(event):
 		if abs(event.relative): 
 			var amount = -event.relative * get_process_delta_time()
 			target_point += amount * TARGET_SPEED
+
+func on_game_loose(fail_point: Vector2i):
+	print("lost the game at: ", fail_point)
