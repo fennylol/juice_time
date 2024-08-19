@@ -1,16 +1,28 @@
-[gd_scene load_steps=4 format=3 uid="uid://dwnu2mt4dp2y4"]
+[gd_scene load_steps=6 format=3 uid="uid://dwnu2mt4dp2y4"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_fc0st"]
 [ext_resource type="PackedScene" uid="uid://d1xyjg3y63hy6" path="res://factory/factory_floor.tscn" id="2_8sjmw"]
 [ext_resource type="PackedScene" uid="uid://fusfeda558pl" path="res://UI/GUI.tscn" id="2_am4hy"]
 
+[sub_resource type="Gradient" id="Gradient_wdjw7"]
+offsets = PackedFloat32Array(0.415663)
+colors = PackedColorArray(0.74236, 0.698351, 0.627913, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1phql"]
+gradient = SubResource("Gradient_wdjw7")
+fill_from = Vector2(1, 1)
+fill_to = Vector2(0, 0)
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1_fc0st")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(250.781, 118.062)
+texture = SubResource("GradientTexture2D_1phql")
 
 [node name="Gui" parent="." instance=ExtResource("2_am4hy")]
 
 [node name="FactoryFloor" parent="." instance=ExtResource("2_8sjmw")]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(1108, 846)
-zoom = Vector2(0.5, 0.5)
+zoom = Vector2(0.25, 0.25)
