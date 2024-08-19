@@ -8,7 +8,7 @@ extends Node2D
 @onready var GHOST_CONVEYORS: TileMap = $ghost_conveyors
 
 signal income_earned(amount: float)
-const CASH_PER_TRUCK = 10
+const CASH_PER_TRUCK = 500
 
 var valid_placement := Color(Color.PALE_GREEN, 0.5)
 var invalid_placement := Color(Color.PALE_VIOLET_RED, 0.5)
@@ -18,7 +18,7 @@ var hover_start: Vector2i
 
 ## TRUCK TIMING AND LOSE CONDITION HANDLING
 signal loose_the_game(failed_truck_point: Vector2i)
-var seconds_to_warn = 1200
+var seconds_to_warn = 10
 var seconds_to_loose = 4000
 
 ## TILEMAP SOURCES
@@ -142,18 +142,11 @@ func _ready():
 	FLIPPER_STATE.clear()
 	MIXER_STATE.clear()
 	TRUCK_STATE.clear()
+	
+	var c0 = Color.MEDIUM_PURPLE
+	var c1 = Color.CORNFLOWER_BLUE
+	place_tutorial(c0, c1)
 
-	
-	var c1 = Color.MEDIUM_PURPLE
-	var c2 = Color.CORNFLOWER_BLUE
-	
-	place_generator(Vector2i(4,2))
-	place_generator(Vector2i(4,8))
-	place_filler(c1, Vector2i(2,2))
-	place_filler(c2, Vector2i(8,8))
-	place_truck(c2, Vector2i(10,7))
-	place_mixer(c1, c2, Vector2(4,5))
-	place_flipper(Vector2i.DOWN, Vector2i(8,4))
 
 func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
@@ -179,6 +172,38 @@ func find_layer_from_color(c: Color) -> int:
 			MACHINE_TILES.set_layer_modulate(layer_index, c)
 			AUTO_TILES.set_layer_modulate(layer_index, c)
 		return LAYER_COLOR_DICT[c]
+
+func place_tutorial(c0, c1):
+	place_generator(Vector2i(-7,-5))
+	place_filler(c0, Vector2i(-9,-3))
+	place_filler(c1, Vector2i(-7,-1))
+	place_flipper(Vector2i.LEFT, Vector2i(-7,-3))
+	place_mixer(c0, c1, Vector2(-7,0))
+	place_truck(mix_colors(c0, c1), Vector2i(-8,2))
+
+
+func place_new_autotiles(level: int, r: int):
+	var easy_cutoff = 2
+	var c0: Color = LAYER_COLOR_DICT.keys()[randi_range(0, LAYER_COLOR_DICT.size()-1)]
+	var c1: Color = Color(randf(),randf(),randf())
+	
+	# TODO check all 6 truck tiles
+	var pos := Vector2i(randi_range(-r,r), randi_range(-r,r))
+	if CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos): 
+		while CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos): 
+			pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
+	var truck_pos: Vector2i = pos
+	
+	pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
+	if CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos):
+		while CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos):
+			pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
+	
+	print("placing truck at: ", truck_pos, " filler at: ", pos)
+	place_filler(c1 if level > easy_cutoff else c0, pos)
+	place_truck(mix_colors(c0, c1) if level > easy_cutoff else c0, truck_pos)
+
+
 
 func process_world_tick(tick_delta: float):
 	## CREATE ATTEMPT ARRAYS. 

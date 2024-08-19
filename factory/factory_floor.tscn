@@ -12,7 +12,7 @@ tile_set = ExtResource("2_pthvs")
 rendering_quadrant_size = 4
 collision_animatable = true
 format = 2
-layer_0/tile_data = PackedInt32Array(262152, 0, 3)
+layer_0/tile_data = PackedInt32Array(-131081, 0, 9, -65545, 0, 8, -131080, 0, 7, -196615, 0, 8, -131079, 0, 8, -65543, 0, 8, 65529, 0, 8, 65527, 0, 1, 65528, 0, 2, 131065, 0, 10, -7, 0, 8, -9, 0, 10)
 
 [node name="auto_tiles" type="TileMap" parent="."]
 tile_set = ExtResource("3_jenf4")

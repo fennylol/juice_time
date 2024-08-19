@@ -3,6 +3,8 @@ extends Control
 const menu_node = preload("res://UI/menuing/main_menu.tscn")
 var MAIN_MENU
 @onready var MACHINE_TRAY = $CanvasLayer/HBoxContainer2/MachineTray
+@onready var CASH_LABEL = $CanvasLayer/HBoxContainer/cash_label
+@onready var LEVEL_LABEL = $CanvasLayer/HBoxContainer/level_label
 
 signal attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i)
 signal attempt_machine(type: String, point: Vector2i)
@@ -104,7 +106,13 @@ func _process(delta):
 	
 
 func update_cash_display(cash: float):
-	pass
+	var base_text: String = "cash: "
+	CASH_LABEL.text = base_text + str(int(cash))
+
+func update_level_display(level: int):
+	var base_text: String = "level: "
+	LEVEL_LABEL.text = base_text + str(level)
+
 
 func play_pressed(): 
 	MAIN_MENU.queue_free()
