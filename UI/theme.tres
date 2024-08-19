@@ -1,0 +1,9 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://dc0sf0alt671h"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_af2r4"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kvuex"]
+
+[resource]
+Button/styles/focus = SubResource("StyleBoxEmpty_af2r4")
+Button/styles/hover = SubResource("StyleBoxEmpty_kvuex")

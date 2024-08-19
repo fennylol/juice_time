@@ -1,0 +1,179 @@
+[gd_scene load_steps=11 format=3 uid="uid://c0mldfy7te0ru"]
+
+[ext_resource type="Texture2D" uid="uid://cmpcp2tcpea8b" path="res://UI/menuing/machine_tray.png" id="1_iipq3"]
+[ext_resource type="Script" path="res://UI/menuing/machine_tray.gd" id="2_7q7c8"]
+[ext_resource type="Texture2D" uid="uid://bd1s3xs2mr7pu" path="res://sprite_master.png" id="3_sgbe7"]
+[ext_resource type="Texture2D" uid="uid://diyda0sodj3pt" path="res://conveyor/conveyor_tileset_32.png" id="4_hpkaa"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_prxo1"]
+atlas = ExtResource("3_sgbe7")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_onfim"]
+atlas = ExtResource("4_hpkaa")
+region = Rect2(0, 384, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kyyhs"]
+atlas = ExtResource("3_sgbe7")
+region = Rect2(256, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y0mba"]
+atlas = ExtResource("3_sgbe7")
+region = Rect2(256, 256, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tk7vp"]
+atlas = ExtResource("3_sgbe7")
+region = Rect2(384, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hkqjc"]
+atlas = ExtResource("3_sgbe7")
+region = Rect2(384, 0, 128, 128)
+
+[node name="MachineTray" type="TextureRect"]
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("1_iipq3")
+stretch_mode = 2
+script = ExtResource("2_7q7c8")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="open" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Control2" type="Control" parent="VBoxContainer/open"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 6.0
+
+[node name="open_button" type="Button" parent="VBoxContainer/open"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 4.0
+flat = true
+
+[node name="Control" type="Control" parent="VBoxContainer/open"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 6.0
+
+[node name="machines" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 4.0
+
+[node name="generator_button" type="Button" parent="VBoxContainer/machines"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/machines/generator_button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="generator_sprite" type="TextureRect" parent="VBoxContainer/machines/generator_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_prxo1")
+
+[node name="flipper_button" type="Button" parent="VBoxContainer/machines"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/machines/flipper_button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="conveyor_sprite" type="TextureRect" parent="VBoxContainer/machines/flipper_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_onfim")
+
+[node name="flipper_sprite" type="TextureRect" parent="VBoxContainer/machines/flipper_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_kyyhs")
+
+[node name="mixer_button" type="Button" parent="VBoxContainer/machines"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/machines/mixer_button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="mixer_sprite" type="TextureRect" parent="VBoxContainer/machines/mixer_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_y0mba")
+
+[node name="mixer_sprite2" type="TextureRect" parent="VBoxContainer/machines/mixer_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_tk7vp")
+
+[node name="mixer_sprite3" type="TextureRect" parent="VBoxContainer/machines/mixer_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_hkqjc")
+
+[node name="conveyor_button" type="Button" parent="VBoxContainer/machines"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/machines/conveyor_button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="conveyor_sprite" type="TextureRect" parent="VBoxContainer/machines/conveyor_button/MarginContainer"]
+layout_mode = 2
+texture = SubResource("AtlasTexture_onfim")
+
+[connection signal="pressed" from="VBoxContainer/open/open_button" to="." method="_on_open_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/machines/generator_button" to="." method="_on_generator_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/machines/flipper_button" to="." method="_on_flipper_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/machines/mixer_button" to="." method="_on_mixer_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/machines/conveyor_button" to="." method="_on_conveyor_button_pressed"]

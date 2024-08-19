@@ -1,8 +1,8 @@
 extends Node2D
 
 var cash: float = 500
-@onready var canvaslayer = $CanvasLayer
-@onready var GUI = $CanvasLayer/Gui
+#@onready var canvaslayer = $CanvasLayer
+@onready var GUI = $Gui
 @onready var FACTORY_FLOOR = $FactoryFloor
 
 @onready var CAMERA = $Camera2D
@@ -14,32 +14,39 @@ const MIN_CAM_ZOOM = 1.5
 var MAX_CAM_ZOOM = 0.25
 var target_zoom: float = 0.5
 
-var game_paused = true
+var game_paused = false
 var time_since_tick = 0
 var TICK_LENGTH_IN_SECONDS = 1
 
 func _ready(): 
 	GUI.attempt_conveyor.connect(forward_attempt_conveyor)
 	GUI.attempt_machine.connect(forward_attempt_machine)
+	GUI.pause.connect(handle_pause)
 	FACTORY_FLOOR.income_earned.connect(earn_cash)
 	FACTORY_FLOOR.loose_the_game.connect(on_game_loose)
 	target_point = CAMERA.position
 
-func forward_attempt_conveyor(type: String, startpoint: Vector2i, endpoint: Vector2i):
-	if type == "use": FACTORY_FLOOR.place_conveyors(startpoint, endpoint)
+func forward_attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i):
+	FACTORY_FLOOR.place_conveyors(startpoint, endpoint)
 
 func forward_attempt_machine(type: String, point: Vector2i):
 	FACTORY_FLOOR.place_machine(type, point)
 
+func earn_cash(amount: float):
+	cash += amount
+	GUI.update_cash_display(amount)
+
+func handle_pause(state: bool):
+	game_paused = state
+
+func _input(event):
+	if game_paused: return
+	if event is InputEventMouseMotion and Input.is_action_pressed("cancel"):
+		if abs(event.relative): 
+			var amount = -event.relative * get_process_delta_time()
+			target_point += amount * TARGET_SPEED
+
 func _process(delta):
-	if Input.is_action_just_pressed("pause"):
-		game_paused = not game_paused
-		if game_paused: 
-			GUI.mouse_filter = 0
-		else: 
-			canvaslayer.hide()
-			
-	
 	if game_paused: return
 	
 	if Input.is_action_just_released("cancel"): 
@@ -64,18 +71,12 @@ func _process(delta):
 		time_since_tick -= TICK_LENGTH_IN_SECONDS
 		FACTORY_FLOOR.process_world_tick(TICK_LENGTH_IN_SECONDS)
 
-func earn_cash(amount: float):
-	cash += amount
-	GUI.update_cash_display(amount)
 
 func speed_modulation(multi : float):
 	TICK_LENGTH_IN_SECONDS = multi
 
-func _input(event):
-	if event is InputEventMouseMotion and Input.is_action_pressed("cancel"):
-		if abs(event.relative): 
-			var amount = -event.relative * get_process_delta_time()
-			target_point += amount * TARGET_SPEED
 
 func on_game_loose(fail_point: Vector2i):
 	print("lost the game at: ", fail_point)
+
+

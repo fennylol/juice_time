@@ -16,9 +16,7 @@ fill_to = Vector2(0, 0)
 [node name="Main" type="Node2D"]
 script = ExtResource("1_fc0st")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="Gui" parent="CanvasLayer" instance=ExtResource("2_am4hy")]
+[node name="Gui" parent="." instance=ExtResource("2_am4hy")]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(250.781, 118.062)
