@@ -27,3 +27,11 @@ layer_0/name = "outline"
 [node name="machine_tiles" type="TileMap" parent="."]
 tile_set = ExtResource("3_jenf4")
 format = 2
+
+[node name="ghost_machines" type="TileMap" parent="."]
+tile_set = ExtResource("3_jenf4")
+format = 2
+
+[node name="ghost_conveyors" type="TileMap" parent="."]
+tile_set = ExtResource("2_pthvs")
+format = 2

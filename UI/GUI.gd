@@ -6,10 +6,14 @@ var MAIN_MENU
 
 signal attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i)
 signal attempt_machine(type: String, point: Vector2i)
+signal hover_machine(type: String, point: Vector2i)
+signal hover_conveyors(start: bool, point: Vector2i)
+signal clear_ghosts
 signal pause(state: bool)
 
 enum {NONE, GENERATOR, FLIPPER, MIXER, CONVEYOR}
 var place_mode = NONE
+var point_valid: bool = false
 
 var tray_open: bool = false
 var tray_target_pos: float = 0
@@ -47,42 +51,50 @@ func adjust_machine_tray_target_pos():
 	tween.tween_property(MACHINE_TRAY, "position:y", tray_target_pos, tray_open_time).set_ease(Tween.EASE_IN)
 
 func change_place_mode(mode: int):
+	point_valid = mode == CONVEYOR#false
 	place_mode = mode
 	set_machine_tray(false)
 
-func _process(delta):
-	if Input.is_action_just_pressed("use"):
-		match place_mode:
-			GENERATOR:
-				attempt_machine.emit("generator", get_global_mouse_position())
-			FLIPPER:
-				attempt_machine.emit("flipper", get_global_mouse_position())
-			MIXER:
-				attempt_machine.emit("mixer", get_global_mouse_position())
-			CONVEYOR:
-				planned_start = get_global_mouse_position()
-				is_dragging = true
-			NONE:
-				pass
-			_:
-				print("how did you get here?")
-			
-		#if Input.is_action_pressed("debug_place_flipper"):
-			#attempt_machine.emit("flipper", get_global_mouse_position())
-		#elif Input.is_action_pressed("debug_place_generator"):
-			#attempt_machine.emit("generator", get_global_mouse_position())
-		#elif  Input.is_action_pressed("debug_place_mixer"):
-			#attempt_machine.emit("mixer", get_global_mouse_position())
-		#else:
-			#planned_start = get_global_mouse_position()
-			#is_dragging = true
+func hover_success(success: bool): point_valid = success
 
-	if Input.is_action_just_released("use"):
-		if is_dragging:
-			planned_end = get_global_mouse_position()
-			attempt_conveyor.emit(planned_start, planned_end)
-			is_dragging = false
+func _process(delta):
+	## PLACING
+	if Input.is_action_just_pressed("use"):
+		if point_valid:
+			match place_mode:
+				GENERATOR:
+					attempt_machine.emit("generator", get_global_mouse_position())
+				FLIPPER:
+					attempt_machine.emit("flipper", get_global_mouse_position())
+				MIXER:
+					attempt_machine.emit("mixer", get_global_mouse_position())
+				CONVEYOR:
+					planned_start = get_global_mouse_position()
+					is_dragging = true
+	## HOVERING
+	elif place_mode < CONVEYOR and place_mode > NONE:
+		var type: String
+		match place_mode:
+			GENERATOR: type = "generator"
+			FLIPPER: type = "flipper"
+			MIXER: type = "mixer"
+		hover_machine.emit(type, get_global_mouse_position())
+	elif place_mode == CONVEYOR and not is_dragging:
+		hover_conveyors.emit(true, get_global_mouse_position())
 	
+	
+	if is_dragging:
+		hover_conveyors.emit(false, get_global_mouse_position())
+		
+		if Input.is_action_just_released("use"):
+				planned_end = get_global_mouse_position()
+				attempt_conveyor.emit(planned_start, planned_end)
+				is_dragging = false
+	
+	if Input.is_action_just_pressed("cancel"): 
+		if is_dragging: is_dragging = false
+		else: change_place_mode(NONE)
+		clear_ghosts.emit()
 	
 	if is_selecting:
 		# close color/dir dialog box

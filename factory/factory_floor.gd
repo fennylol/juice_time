@@ -3,9 +3,18 @@ extends Node2D
 @onready var CONVEYOR_TILES: TileMap = $conveyor_tiles
 @onready var BOTTLE_TILES: TileMap = $bottle_tiles
 @onready var MACHINE_TILES: TileMap = $machine_tiles
-@onready var AUTO_TILES : TileMap = $auto_tiles
+@onready var AUTO_TILES: TileMap = $auto_tiles
+@onready var GHOST_MACHINES: TileMap = $ghost_machines
+@onready var GHOST_CONVEYORS: TileMap = $ghost_conveyors
+
 signal income_earned(amount: float)
 const CASH_PER_TRUCK = 10
+
+var valid_placement := Color(Color.PALE_GREEN, 0.5)
+var invalid_placement := Color(Color.PALE_VIOLET_RED, 0.5)
+signal machine_hovering(valid: bool)
+signal conveyor_hovering(valid: bool)
+var hover_start: Vector2i
 
 ## TRUCK TIMING AND LOSE CONDITION HANDLING
 signal loose_the_game(failed_truck_point: Vector2i)
@@ -50,6 +59,7 @@ const DIR_FROM_TILE: Dictionary = {
 enum {COLOR, POSITION}
 const NULL_BOTTLE_COLOR = Color.BLACK
 var LAYER_COLOR_DICT = {}
+
 
 const TILE_ATLAS: Dictionary = {
 	"bottle"       : Vector2i(0,0),
@@ -320,11 +330,66 @@ func process_world_tick(tick_delta: float):
 	
 	## SPAWN TRUCKS AND FILLERS
 	pass
-	
-	
+
+func clear_ghosts():
+	GHOST_MACHINES.clear()
+	GHOST_CONVEYORS.clear()
 
 #endregion
 #region CONVEYORS
+
+func hover_conveyors(starting: bool, point: Vector2i):
+	var pos = CONVEYOR_TILES.local_to_map(point)
+	var conveyor_beneath: bool = CONVEYOR_TILES.get_used_cells(0).has(pos)
+	var machine_beneath: bool = MACHINE_TILES.get_used_cells(0).has(pos)
+	var autoplace_beneath: bool = AUTO_TILES.get_used_cells(0).has(pos)
+	
+	var color = invalid_placement
+	if not (conveyor_beneath or machine_beneath) : color = valid_placement
+	
+	GHOST_CONVEYORS.clear()
+	GHOST_CONVEYORS.set_layer_modulate(0, color)
+	if starting: hover_start = pos
+	
+	var diff: Vector2i = pos - hover_start
+	var direction: Vector2i = Vector2i.LEFT if abs(diff.x) >= abs(diff.y) and diff.x < 0 else \
+							  Vector2i.RIGHT if abs(diff.x) > abs(diff.y) and diff.x > 0 else \
+							  Vector2i.UP if abs(diff.x) <= abs(diff.y) and diff.y < 0 else \
+							  Vector2i.DOWN
+	
+	
+	## SET INITIAL POSITION AND TARGET POSITION
+	var curr_pos: Vector2i = hover_start
+	var target_pos = Vector2i(hover_start.x, pos.y) if direction == Vector2i.UP or direction == Vector2i.DOWN else Vector2i(pos.x, hover_start.y)
+	var add_one_to_target = target_pos + direction
+	
+	## CHECK EACH TILE BETWEEN START AND TARGET POSITION, INCLUSIVE
+	## (STOP CHECKING IF YOU ARE ONE TILE PAST TARGET_POS)
+	while curr_pos != add_one_to_target:
+		var tile: Vector2i = CONVEYOR_ATLAS[direction][SOLO if hover_start == target_pos else START if curr_pos == hover_start else END if curr_pos == target_pos else MIDDLE]
+		
+		## KEEP ADDING NEW TILES AS LONG AS THERE IS NO TILE ALREADY THERE
+		var tile_is_unblocked = true
+		for truck in TRUCK_STATE.keys():
+			if TRUCK_STATE[truck]["area"].has(curr_pos):
+				tile_is_unblocked = false
+		for generator in GENERATOR_STATE.keys():
+			if generator == curr_pos: tile_is_unblocked = false 
+		if CONVEYOR_TILES.get_cell_source_id(0,curr_pos) == -1 and tile_is_unblocked:
+			GHOST_CONVEYORS.set_cell(0, curr_pos, conveyor_source, tile)
+			curr_pos += direction
+		else:
+			## IF YOU FIND AN EXTANT TILE, GO BACK ONE, SET AN "END" TILE, AND BREAK THE LOOP
+			## DO THIS ONLY IF YOU HAVE ALREADY PLACED AT LEAST ONE TILE
+			if curr_pos != hover_start:
+				curr_pos -= direction
+				tile = CONVEYOR_ATLAS[direction][SOLO if hover_start == curr_pos else END]
+				GHOST_CONVEYORS.set_cell(0, curr_pos, conveyor_source, tile)
+			break
+	
+	
+	
+	#conveyor_hovering.emit(color == valid_placement)
 
 func place_conveyors(startpoint: Vector2i, endpoint: Vector2i):
 	
@@ -373,6 +438,30 @@ func erase_conveyor(global_pos: Vector2):
 
 #endregion
 #region MACHINES
+
+func hover_machine(type: String, point: Vector2):
+	var pos = MACHINE_TILES.local_to_map(point)
+	if pos not in GHOST_MACHINES.get_used_cells(0): GHOST_MACHINES.clear()
+	
+	var conveyor_beneath: bool = CONVEYOR_TILES.get_used_cells(0).has(pos)
+	var machine_beneath: bool = MACHINE_TILES.get_used_cells(0).has(pos)
+	var autoplace_beneath: bool = AUTO_TILES.get_used_cells(0).has(pos)
+	var color = invalid_placement
+	
+	if not (machine_beneath or autoplace_beneath):
+		match type:
+			"generator": 
+				if not conveyor_beneath: 
+					color = valid_placement
+			"flipper":
+				if conveyor_beneath: 
+					color = valid_placement
+			"mixer":
+				if conveyor_beneath: 
+					color = valid_placement
+	GHOST_MACHINES.set_cell(0, pos, machine_source, TILE_ATLAS[type])
+	GHOST_MACHINES.set_layer_modulate(0, color)
+	machine_hovering.emit(color == valid_placement)
 
 func place_machine(type: String, point: Vector2):
 	var pos = MACHINE_TILES.local_to_map(point)

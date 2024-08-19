@@ -21,16 +21,23 @@ var TICK_LENGTH_IN_SECONDS = 1
 func _ready(): 
 	GUI.attempt_conveyor.connect(forward_attempt_conveyor)
 	GUI.attempt_machine.connect(forward_attempt_machine)
+	GUI.hover_machine.connect(forward_hover_machine)
+	GUI.hover_conveyors.connect(forward_hover_conveyors)
+	GUI.clear_ghosts.connect(forward_clear_ghosts)
 	GUI.pause.connect(handle_pause)
+	
 	FACTORY_FLOOR.income_earned.connect(earn_cash)
 	FACTORY_FLOOR.loose_the_game.connect(on_game_loose)
+	FACTORY_FLOOR.machine_hovering.connect(forward_machine_hovering)
 	target_point = CAMERA.position
 
-func forward_attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i):
-	FACTORY_FLOOR.place_conveyors(startpoint, endpoint)
+func forward_attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i): FACTORY_FLOOR.place_conveyors(startpoint, endpoint)
+func forward_attempt_machine(type: String, point: Vector2i): FACTORY_FLOOR.place_machine(type, point)
+func forward_hover_machine(type: String, point: Vector2i): FACTORY_FLOOR.hover_machine(type, point)
+func forward_hover_conveyors(starting: bool, point: Vector2i): FACTORY_FLOOR.hover_conveyors(starting, point)
+func forward_clear_ghosts(): FACTORY_FLOOR.clear_ghosts()
 
-func forward_attempt_machine(type: String, point: Vector2i):
-	FACTORY_FLOOR.place_machine(type, point)
+func forward_machine_hovering(success: bool): GUI.hover_success(success)
 
 func earn_cash(amount: float):
 	cash += amount
