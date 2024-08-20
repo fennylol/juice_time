@@ -7,8 +7,7 @@ extends Node2D
 @onready var GHOST_MACHINES: TileMap = $ghost_machines
 @onready var GHOST_CONVEYORS: TileMap = $ghost_conveyors
 
-signal income_earned(amount: float)
-const CASH_PER_TRUCK = 500
+signal shipped_truck()
 
 var valid_placement := Color(Color.PALE_GREEN, 0.5)
 var invalid_placement := Color(Color.PALE_VIOLET_RED, 0.5)
@@ -18,7 +17,7 @@ var hover_start: Vector2i
 
 ## TRUCK TIMING AND LOSE CONDITION HANDLING
 signal loose_the_game(failed_truck_point: Vector2i)
-var warning_state = [30,35,40,45,50,55,60]
+var warning_state = [30,40,50,60,70,80,90]
 
 ## TILEMAP SOURCES
 var conveyor_source = 0
@@ -59,7 +58,9 @@ signal colors(colors: Array)
 enum {COLOR, POSITION}
 const NULL_BOTTLE_COLOR = Color.BLACK
 var LAYER_COLOR_DICT = {}
-
+var COLOR_COMPLEXITY_DICT = {
+	1 : [Color.RED,Color.GREEN,Color.BLUE]
+}
 
 const TILE_ATLAS: Dictionary = {
 	"bottle"       : Vector2i(0,4),
@@ -147,10 +148,7 @@ func _ready():
 	FLIPPER_STATE.clear()
 	MIXER_STATE.clear()
 	TRUCK_STATE.clear()
-	
-	var c0 = Color.MEDIUM_PURPLE
-	var c1 = Color.CORNFLOWER_BLUE
-	place_tutorial(c0, c1)
+	place_tutorial()
 
 
 func modulate_speed(multi : float):
@@ -178,24 +176,76 @@ func find_layer_from_color(c: Color) -> int:
 			AUTO_TILES.set_layer_modulate(layer_index, c)
 		return LAYER_COLOR_DICT[c]
 
-func place_tutorial(c0, c1):
-	place_generator(Vector2i(-7,-5))
-	place_filler(c0, Vector2i(-9,-3))
-	place_filler(c1, Vector2i(-7,-1))
-	place_flipper(Vector2i.LEFT, Vector2i.DOWN, Vector2i(-7,-3))
-	place_mixer(c0, c1, Vector2(-7,0))
-	place_truck(mix_colors(c0, c1), Vector2i(-8,2))
+# TODO: turn into a field in LAYER_COLOR_DICT
+func set_color_complexity(c: Color, tier: int):
+	if COLOR_COMPLEXITY_DICT.keys().has(tier):
+		if not COLOR_COMPLEXITY_DICT[tier].has(c):
+			COLOR_COMPLEXITY_DICT[tier].append(c)
+	else: 
+		COLOR_COMPLEXITY_DICT[tier] = [c]
 
+func two_different_nums(max: int) -> Array[int]:
+	var rand0 = randi_range(0,max)
+	var rand1 = randi_range(0,max-1)
+	return [rand0, rand1 + (1 if rand0 <= rand1 else 0)]
+
+func place_tutorial():
+	var TDN = two_different_nums(2)
+	var c0 = COLOR_COMPLEXITY_DICT[1][TDN[0]]
+	var c1 = COLOR_COMPLEXITY_DICT[1][TDN[1]]
+	set_color_complexity(mix_colors(c0, c1), 2)
+	
+	place_generator(Vector2i(2,-4))
+	place_generator(Vector2i(-7,1))
+	place_generator(Vector2i(-4,-2))
+	
+	place_filler(c0, Vector2i(7,-3))
+	place_filler(c1, Vector2i(5, 0))
+	place_filler(c0, Vector2i(-1,-1))
+	place_filler(c1, Vector2i(-5, 2))
+	
+	place_flipper(Vector2i.RIGHT, Vector2i.DOWN, Vector2i(4,-3))
+	place_mixer(c0, c1, Vector2(7,0))
+	place_mixer(c1, c0, Vector2(3,-1))
+	place_truck(mix_colors(c0, c1), Vector2i(3,1))
+	place_basic_fillers(20)
+
+func place_basic_fillers(r: int):
+	for c in COLOR_COMPLEXITY_DICT[1]:
+		var pos := Vector2i(randi_range(-r,r), randi_range(-r,r))
+		if CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos):
+			while CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos):
+				pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
+		place_filler(c, pos)
 
 func place_new_autotiles(level: int, r: int):
-	var easy_cutoff = 2
-	var c0: Color = LAYER_COLOR_DICT.keys()[randi_range(0, LAYER_COLOR_DICT.size()-1)]
-	var c1: Color = Color(randf(),randf(),randf())
+	## RANDOMIZE BASED ON LEVEL
+	var complexity_cap = ceil(level/2.0)
+	var cmplx0 = randi_range(1,complexity_cap-1)
+	var cmplx1 = randi_range(1, complexity_cap-cmplx0)
+	while not COLOR_COMPLEXITY_DICT.keys().has(cmplx0): cmplx0 = max(cmplx0 + 1, 0)   
+	while not COLOR_COMPLEXITY_DICT.keys().has(cmplx1): cmplx1 = max(cmplx1 + 1, 0)
+	
+	var TDN: Array[int]
+	if cmplx0 == cmplx1:
+		TDN = two_different_nums(COLOR_COMPLEXITY_DICT[cmplx0].size()-1 )
+	else:
+		TDN.append(randi_range(0, COLOR_COMPLEXITY_DICT[cmplx0].size()))
+		TDN.append(randi_range(0, COLOR_COMPLEXITY_DICT[cmplx1].size()))
+	
+	var c0: Color = COLOR_COMPLEXITY_DICT[cmplx0][TDN[0]]
+	var c1: Color = COLOR_COMPLEXITY_DICT[cmplx1][TDN[1]]
+	
+	var mixed_color: Color = mix_colors(c0, c1)
+	set_color_complexity(mixed_color, cmplx0+cmplx1)
+	
+	## ADD NEW COLOR TO DICTIONARIES LOL
+	find_layer_from_color(mixed_color)
 	
 	# TODO check all 6 truck tiles
 	var pos := Vector2i(randi_range(-r,r), randi_range(-r,r))
-	if CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos): 
-		while CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos): 
+	if not is_safe_for_truck(pos): 
+		while not is_safe_for_truck(pos): 
 			pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
 	var truck_pos: Vector2i = pos
 	
@@ -204,9 +254,20 @@ func place_new_autotiles(level: int, r: int):
 		while CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos):
 			pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
 	
-	print("placing truck at: ", truck_pos, " filler at: ", pos)
-	place_filler(c1 if level > easy_cutoff else c0, pos)
-	place_truck(mix_colors(c0, c1) if level > easy_cutoff else c0, truck_pos)
+	place_filler(c0, pos)
+	place_truck(mixed_color, truck_pos)
+	if level > 3 and not (randi_range(0, level) % 5): place_basic_fillers(r)
+
+
+#func is_safe_for_truck(pos: Vector2i): return not (CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)))
+func is_safe_for_truck(pos: Vector2i):
+	if  CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or \
+		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or \
+		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or \
+		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or \
+		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or \
+		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)): return false
+	else: return true
 
 func send_colors(): colors.emit(LAYER_COLOR_DICT.keys())
 
@@ -222,7 +283,7 @@ func process_world_tick(tick_delta: float):
 		## INCREASE "SINCE LAST FILLED" BY DELTA TIME (TICK LENGTH).
 		## ADD WARNING_TIMER IF ITS BEEN AT LEAST 30 SECONDS AND A TIMER DOES NOT ALREADY EXIST
 		TRUCK_STATE[pos]["since_last_filled"] += tick_delta
-		var warning_timer_location = pos+Vector2i.DOWN+Vector2i.DOWN
+		var warning_timer_location = pos#+Vector2i.DOWN+Vector2i.DOWN
 		
 		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[0]:
 			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_0"])
@@ -248,7 +309,7 @@ func process_world_tick(tick_delta: float):
 				MACHINE_TILES.erase_cell(0, pos+offset)
 				MACHINE_TILES.erase_cell(find_layer_from_color(TRUCK_STATE[pos]["color"]), pos+offset)
 			TRUCK_STATE[pos]["filled"] = 0
-			income_earned.emit(CASH_PER_TRUCK)
+			shipped_truck.emit()
 	
 	## BOTTLE LOCATION CHECK LOOP
 	for pos in BOTTLE_TILES.get_used_cells(0):

@@ -25,4 +25,4 @@ texture = SubResource("GradientTexture2D_1phql")
 [node name="FactoryFloor" parent="." instance=ExtResource("2_8sjmw")]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(0.25, 0.25)
+zoom = Vector2(0.5, 0.5)

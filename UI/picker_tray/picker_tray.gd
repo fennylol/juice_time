@@ -8,14 +8,16 @@ signal color1_picked(c: Color)
 signal direction0_picked(d: Vector2i)
 signal direction1_picked(d: Vector2i)
 
-@onready var OPTION_BOX0 = $MarginContainer/HBoxContainer/option2
-@onready var OPTION_BOX1 = $MarginContainer/HBoxContainer/option1
-
+@onready var OPTION_BOX0 = $MarginContainer/VBoxContainer/zones/ScrollContainer1/option1
+@onready var OPTION_BOX1 = $MarginContainer/VBoxContainer/zones/ScrollContainer2/option2
+@onready var LABEL0 = $MarginContainer/VBoxContainer/labels/Label0
+@onready var LABEL1 = $MarginContainer/VBoxContainer/labels/Label1
 
 func set_colors(colors: Array):
 	clear_box0()
 	clear_box1()
-	
+	LABEL0.text = "input color #1"
+	LABEL1.text = "input color #2"
 	for c in colors:
 		if c == Color.BLACK: continue
 		var button0 = color_button.instantiate()
@@ -32,7 +34,8 @@ func set_colors(colors: Array):
 func set_directions():
 	clear_box0()
 	clear_box1()
-	
+	LABEL0.text = "output direction #1"
+	LABEL1.text = "output direction #2"
 	var button0 = direction_button.instantiate()
 	var button1 = direction_button.instantiate()
 	button0.picked.connect(pickeddirection0)

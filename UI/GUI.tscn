@@ -29,14 +29,16 @@ size_flags_vertical = 3
 
 [node name="cash_label" type="Label" parent="CanvasLayer/main/header"]
 layout_mode = 2
-text = "cash: $0"
-horizontal_alignment = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "   cash: $0"
 vertical_alignment = 1
 
 [node name="level_label" type="Label" parent="CanvasLayer/main/header"]
 layout_mode = 2
-text = "level = 0
-"
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "level: 1   "
 horizontal_alignment = 2
 vertical_alignment = 1
 

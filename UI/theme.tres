@@ -1,9 +1,13 @@
-[gd_resource type="Theme" load_steps=3 format=3 uid="uid://dc0sf0alt671h"]
+[gd_resource type="Theme" load_steps=4 format=3 uid="uid://dc0sf0alt671h"]
+
+[ext_resource type="FontFile" uid="uid://rcppqoo1n14h" path="res://UI/Shantell_Sans-Informal_Light.otf" id="1_ikkdx"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_af2r4"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kvuex"]
 
 [resource]
+Button/fonts/font = ExtResource("1_ikkdx")
 Button/styles/focus = SubResource("StyleBoxEmpty_af2r4")
 Button/styles/hover = SubResource("StyleBoxEmpty_kvuex")
+Label/fonts/font = ExtResource("1_ikkdx")

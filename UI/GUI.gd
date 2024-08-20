@@ -145,13 +145,13 @@ func _process(delta):
 		direction1 = Vector2i.ZERO
 
 
-func update_cash_display(cash: float):
-	var base_text: String = "cash: "
-	CASH_LABEL.text = base_text + str(int(cash))
+func update_cash_display(cash: int):
+	var base_text: String = "   trucks till next level: "
+	CASH_LABEL.text = base_text + str(cash)
 
 func update_level_display(level: int):
 	var base_text: String = "level: "
-	LEVEL_LABEL.text = base_text + str(level)
+	LEVEL_LABEL.text = base_text + str(level) + "   "
 
 
 func play_pressed(): 
