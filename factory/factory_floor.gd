@@ -18,8 +18,7 @@ var hover_start: Vector2i
 
 ## TRUCK TIMING AND LOSE CONDITION HANDLING
 signal loose_the_game(failed_truck_point: Vector2i)
-var seconds_to_warn = 10
-var seconds_to_loose = 4000
+var warning_state = [5,10,15,20,25,30,35]
 
 ## TILEMAP SOURCES
 var conveyor_source = 0
@@ -62,18 +61,23 @@ var LAYER_COLOR_DICT = {}
 
 
 const TILE_ATLAS: Dictionary = {
-	"bottle"       : Vector2i(0,0),
-	"juice"        : Vector2i(1,0),
-	"generator"    : Vector2i(2,0),
-	"filler"       : Vector2i(4,1),
-	"filler_color" : Vector2i(4,3),
-	"flipper"      : Vector2i(2,1),
-	"mixer"        : Vector2i(2,2),
-	"mixer_color0" : Vector2i(3,1),
-	"mixer_color1" : Vector2i(3,0),
-	"mixer_color0_filled": Vector2i(3,2),
-	"mixer_color1_filled": Vector2i(4,0),
-	"warning_timer": Vector2i(2,0) #Vector2i(0,5)
+	"bottle"       : Vector2i(0,4),
+	"juice"        : Vector2i(4,3),
+	"generator"    : Vector2i(0,0),
+	"filler"       : Vector2i(3,0),
+	"filler_color" : Vector2i(4,0),
+	"flipper"      : Vector2i(1,0),
+	"mixer"        : Vector2i(2,0),
+	"mixer_color0" : Vector2i(5,0),
+	"mixer_color1" : Vector2i(5,2),
+	"mixer_color0_filled": Vector2i(5,1),
+	"mixer_color1_filled": Vector2i(5,3),
+	"warning_timer_0": Vector2i(0,5),
+	"warning_timer_1": Vector2i(1,5),
+	"warning_timer_2": Vector2i(2,5),
+	"warning_timer_3": Vector2i(3,5),
+	"warning_timer_4": Vector2i(4,5),
+	"warning_timer_5": Vector2i(5,5)
 }
 var patterns: Dictionary = {
 	"truck" : {
@@ -218,10 +222,22 @@ func process_world_tick(tick_delta: float):
 		## ADD WARNING_TIMER IF ITS BEEN AT LEAST 30 SECONDS AND A TIMER DOES NOT ALREADY EXIST
 		TRUCK_STATE[pos]["since_last_filled"] += tick_delta
 		var warning_timer_location = pos+Vector2i.DOWN+Vector2i.DOWN
-		if TRUCK_STATE[pos]["since_last_filled"] >= seconds_to_warn and MACHINE_TILES.get_cell_source_id(0, warning_timer_location) == -1:
-			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer"])
+		
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[0]:
+			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_0"])
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[1]:
+			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_1"])
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[2]:
+			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_2"])
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[3]:
+			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_3"])
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[4]:
+			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_4"])
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[5]:
+			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_5"])
+		
 		## IF "SINCE LAST FILLED" IS GREATER THAN 60, SEND A "LOSE THE GAME" SIGNAL
-		if TRUCK_STATE[pos]["since_last_filled"] >= seconds_to_loose:
+		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[6]:
 			var fail_point = AUTO_TILES.map_to_local(pos)
 			loose_the_game.emit(fail_point)
 		
@@ -289,12 +305,12 @@ func process_world_tick(tick_delta: float):
 							MACHINE_TILES.set_cell(0, truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["bottle"])
 							MACHINE_TILES.set_cell(layer_index, truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["juice"])
 							TRUCK_STATE[truck]["filled"] = TRUCK_STATE[truck]["filled"] + 1
-							## CHECK FOR TRUCK WARNING_TIMER AND REMOVE IF EXISTS
-							## SET "SINCE LAST FILLED" TO 0
-							var warning_timer_location = truck+Vector2i.DOWN+Vector2i.DOWN
-							if MACHINE_TILES.get_cell_source_id(0, warning_timer_location) == -1:
-								MACHINE_TILES.erase_cell(0,warning_timer_location)
-							TRUCK_STATE[truck]["since_last_filled"] = 0
+						## CHECK FOR TRUCK WARNING_TIMER AND REMOVE IF EXISTS
+						## SET "SINCE LAST FILLED" TO 0
+						var warning_timer_location = truck+Vector2i.DOWN+Vector2i.DOWN
+						#if MACHINE_TILES.get_cell_source_id(0, warning_timer_location) == -1:
+						MACHINE_TILES.erase_cell(0,warning_timer_location)
+						TRUCK_STATE[truck]["since_last_filled"] = 0
 			## ELSE, ADD BOTTLE LOCATION AND COLOR TO "ATTEMPT" ARRAY
 			attempt_array.append(new_attempt)
 	
