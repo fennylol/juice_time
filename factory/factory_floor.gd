@@ -18,7 +18,7 @@ var hover_start: Vector2i
 
 ## TRUCK TIMING AND LOSE CONDITION HANDLING
 signal loose_the_game(failed_truck_point: Vector2i)
-var warning_state = [5,10,15,20,25,30,35]
+var warning_state = [60,70,80,90,100,110,120]
 
 ## TILEMAP SOURCES
 var conveyor_source = 0
