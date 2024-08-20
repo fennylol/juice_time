@@ -6,6 +6,8 @@ var MAIN_MENU
 @onready var CASH_LABEL = $CanvasLayer/main/header/cash_label
 @onready var LEVEL_LABEL = $CanvasLayer/main/header/level_label
 @onready var PICKER_TRAY = $CanvasLayer/main/body/PickerTray
+@onready var CANVAS = $CanvasLayer
+@onready var MAIN_CONTAINER = $CanvasLayer/main
 
 signal attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i)
 signal attempt_machine(type: String, point: Vector2i, data: Array)
@@ -86,7 +88,7 @@ func _process(delta):
 					place_mode = NONE
 					clear_ghosts.emit()
 					planned_start = get_global_mouse_position()
-					PICKER_TRAY.visible = true
+					bring_picker_to_front(true)
 					# when colors are recieved, the request will be sent
 					PICKER_TRAY.set_directions()
 				MIXER: 
@@ -127,13 +129,13 @@ func _process(delta):
 	
 	## REQUEST MACHINE WITH USER DATA
 	if color0 != NULL_BOTTLE_COLOR and color1 != NULL_BOTTLE_COLOR:
-		PICKER_TRAY.visible = false
+		bring_picker_to_front(false)
 		attempt_machine.emit("mixer", planned_start, [color0, color1])
 		color0 = NULL_BOTTLE_COLOR
 		color1 = NULL_BOTTLE_COLOR
 		
 	if direction0 != Vector2i.ZERO and direction1 != Vector2i.ZERO:
-		PICKER_TRAY.visible = false
+		bring_picker_to_front(false)
 		attempt_machine.emit("flipper", planned_start, [direction0, direction1])
 		direction0 = Vector2i.ZERO
 		direction1 = Vector2i.ZERO
@@ -162,5 +164,13 @@ func recieve_direction0(d: Vector2i): direction0 = d
 func recieve_direction1(d: Vector2i): direction1 = d
 
 func recieve_colors(colors: Array): 
-	PICKER_TRAY.visible = true
+	bring_picker_to_front(true)
 	PICKER_TRAY.set_colors(colors)
+
+func bring_picker_to_front(front: bool):
+	if front: 
+		PICKER_TRAY.visible = true
+		CANVAS.move_child(MAIN_CONTAINER, 1)
+	else: 
+		PICKER_TRAY.visible = false
+		CANVAS.move_child(MAIN_CONTAINER, 0)

@@ -506,7 +506,6 @@ func hover_machine(type: String, point: Vector2):
 	machine_hovering.emit(color == valid_placement)
 
 func place_machine(type: String, point: Vector2, data: Array):
-	print(data)
 	var pos = MACHINE_TILES.local_to_map(point)
 	var conveyor_beneath: bool = CONVEYOR_TILES.get_used_cells(0).has(pos)
 	var success: bool = false
