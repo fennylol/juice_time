@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://fusfeda558pl"]
+[gd_scene load_steps=4 format=3 uid="uid://fusfeda558pl"]
 
 [ext_resource type="Script" path="res://UI/GUI.gd" id="1_yr1bh"]
 [ext_resource type="PackedScene" uid="uid://c0mldfy7te0ru" path="res://UI/menuing/machine_tray.tscn" id="2_4lasl"]
+[ext_resource type="PackedScene" uid="uid://co5u4teoosp3n" path="res://UI/picker_tray/picker_tray.tscn" id="3_bi8s8"]
 
 [node name="Gui" type="Control"]
 layout_mode = 3
@@ -14,26 +15,46 @@ script = ExtResource("1_yr1bh")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
-anchors_preset = 10
+[node name="main" type="VBoxContainer" parent="CanvasLayer"]
+anchors_preset = 15
 anchor_right = 1.0
-offset_bottom = 23.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="cash_label" type="Label" parent="CanvasLayer/HBoxContainer"]
+[node name="header" type="HBoxContainer" parent="CanvasLayer/main"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="cash_label" type="Label" parent="CanvasLayer/main/header"]
 layout_mode = 2
 text = "cash: $0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="level_label" type="Label" parent="CanvasLayer/HBoxContainer"]
+[node name="level_label" type="Label" parent="CanvasLayer/main/header"]
 layout_mode = 2
 text = "level = 0
 "
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer"]
+[node name="body" type="BoxContainer" parent="CanvasLayer/main"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 9.0
+alignment = 1
+
+[node name="PickerTray" parent="CanvasLayer/main/body" instance=ExtResource("3_bi8s8")]
+visible = false
+layout_mode = 2
+
+[node name="spacer" type="Control" parent="CanvasLayer/main"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="machine_container" type="HBoxContainer" parent="CanvasLayer"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
@@ -42,7 +63,6 @@ offset_top = -320.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="MachineTray" parent="CanvasLayer/HBoxContainer2" instance=ExtResource("2_4lasl")]
+[node name="MachineTray" parent="CanvasLayer/machine_container" instance=ExtResource("2_4lasl")]
 layout_mode = 2
 size_flags_horizontal = 6
-mouse_filter = 0

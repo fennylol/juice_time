@@ -1,0 +1,107 @@
+[gd_scene load_steps=7 format=3 uid="uid://co8epsardacjj"]
+
+[ext_resource type="Script" path="res://UI/picker_tray/direction_picker_button.gd" id="1_esuvf"]
+[ext_resource type="Texture2D" uid="uid://diyda0sodj3pt" path="res://conveyor/conveyor_tileset_32.png" id="2_mdbch"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xrddg"]
+atlas = ExtResource("2_mdbch")
+region = Rect2(0, 1920, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jrkqo"]
+atlas = ExtResource("2_mdbch")
+region = Rect2(0, 896, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0xqhe"]
+atlas = ExtResource("2_mdbch")
+region = Rect2(0, 384, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xghk0"]
+atlas = ExtResource("2_mdbch")
+region = Rect2(0, 1408, 128, 128)
+
+[node name="DirectionPickerButton" type="VBoxContainer"]
+custom_minimum_size = Vector2(384, 384)
+offset_right = 392.0
+offset_bottom = 392.0
+script = ExtResource("1_esuvf")
+
+[node name="up" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="spacer" type="Control" parent="up"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+
+[node name="up_button" type="Button" parent="up"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="UP" type="TextureRect" parent="up/up_button"]
+layout_mode = 2
+offset_right = 128.0
+offset_bottom = 128.0
+texture = SubResource("AtlasTexture_xrddg")
+
+[node name="spacer2" type="Control" parent="up"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+
+[node name="sides" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="left_button" type="Button" parent="sides"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="LEFT" type="TextureRect" parent="sides/left_button"]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+texture = SubResource("AtlasTexture_jrkqo")
+
+[node name="spacer" type="Control" parent="sides"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+
+[node name="right_button" type="Button" parent="sides"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="RIGHT" type="TextureRect" parent="sides/right_button"]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+texture = SubResource("AtlasTexture_0xqhe")
+
+[node name="down" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="spacer" type="Control" parent="down"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+
+[node name="down_button" type="Button" parent="down"]
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="DOWN" type="TextureRect" parent="down/down_button"]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+texture = SubResource("AtlasTexture_xghk0")
+
+[node name="spacer2" type="Control" parent="down"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+
+[connection signal="pressed" from="up/up_button" to="." method="_on_up_button_pressed"]
+[connection signal="pressed" from="sides/left_button" to="." method="_on_left_button_pressed"]
+[connection signal="pressed" from="sides/right_button" to="." method="_on_right_button_pressed"]
+[connection signal="pressed" from="down/down_button" to="." method="_on_down_button_pressed"]

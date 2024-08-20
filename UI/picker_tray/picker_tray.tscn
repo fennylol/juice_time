@@ -1,0 +1,42 @@
+[gd_scene load_steps=4 format=3 uid="uid://co5u4teoosp3n"]
+
+[ext_resource type="Texture2D" uid="uid://doqstou4y6f22" path="res://UI/picker_tray/picker_tray.png" id="1_b4nln"]
+[ext_resource type="Script" path="res://UI/picker_tray/picker_tray.gd" id="2_ok20v"]
+[ext_resource type="PackedScene" uid="uid://co8epsardacjj" path="res://UI/picker_tray/direction_picker_button.tscn" id="3_k1c47"]
+
+[node name="PickerTray" type="TextureRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_b4nln")
+script = ExtResource("2_ok20v")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 63
+theme_override_constants/margin_top = 70
+theme_override_constants/margin_right = 63
+theme_override_constants/margin_bottom = 70
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="option1" type="FlowContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="DirectionPickerButton" parent="MarginContainer/HBoxContainer/option1" instance=ExtResource("3_k1c47")]
+layout_mode = 2
+
+[node name="option2" type="FlowContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1

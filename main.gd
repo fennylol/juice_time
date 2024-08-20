@@ -26,6 +26,7 @@ const DEFAULT_LENGTH = 1
 var TICK_LENGTH_IN_SECONDS = DEFAULT_LENGTH
 
 func _ready(): 
+	set_texture_filter(CanvasItem.TEXTURE_FILTER_NEAREST)
 	earn_cash(0)
 	
 	GUI.attempt_conveyor.connect(forward_attempt_conveyor)
@@ -33,20 +34,24 @@ func _ready():
 	GUI.hover_machine.connect(forward_hover_machine)
 	GUI.hover_conveyors.connect(forward_hover_conveyors)
 	GUI.clear_ghosts.connect(forward_clear_ghosts)
+	GUI.request_colors.connect(forward_request_colors)
 	GUI.pause.connect(handle_pause)
 	
 	FACTORY_FLOOR.income_earned.connect(earn_cash)
 	FACTORY_FLOOR.loose_the_game.connect(on_game_loose)
 	FACTORY_FLOOR.machine_hovering.connect(forward_machine_hovering)
+	FACTORY_FLOOR.colors.connect(forward_colors)
 	target_point = CAMERA.position
 
 func forward_attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i): FACTORY_FLOOR.place_conveyors(startpoint, endpoint)
-func forward_attempt_machine(type: String, point: Vector2i): FACTORY_FLOOR.place_machine(type, point)
+func forward_attempt_machine(type: String, point: Vector2i, data: Array): FACTORY_FLOOR.place_machine(type, point, data)
 func forward_hover_machine(type: String, point: Vector2i): FACTORY_FLOOR.hover_machine(type, point)
 func forward_hover_conveyors(starting: bool, point: Vector2i): FACTORY_FLOOR.hover_conveyors(starting, point)
 func forward_clear_ghosts(): FACTORY_FLOOR.clear_ghosts()
+func forward_request_colors(): FACTORY_FLOOR.send_colors()
 
 func forward_machine_hovering(success: bool): GUI.hover_success(success)
+func forward_colors(colors: Array): GUI.recieve_colors(colors)
 
 func earn_cash(amount: float):
 	cash += amount

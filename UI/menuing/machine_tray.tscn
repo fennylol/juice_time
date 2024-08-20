@@ -7,7 +7,7 @@
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_prxo1"]
 atlas = ExtResource("3_sgbe7")
-region = Rect2(256, 0, 128, 128)
+region = Rect2(0, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_onfim"]
 atlas = ExtResource("4_hpkaa")
@@ -15,19 +15,19 @@ region = Rect2(0, 384, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kyyhs"]
 atlas = ExtResource("3_sgbe7")
-region = Rect2(256, 128, 128, 128)
+region = Rect2(128, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_y0mba"]
 atlas = ExtResource("3_sgbe7")
-region = Rect2(256, 256, 128, 128)
+region = Rect2(256, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tk7vp"]
 atlas = ExtResource("3_sgbe7")
-region = Rect2(384, 128, 128, 128)
+region = Rect2(640, 0, 128, 128)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hkqjc"]
 atlas = ExtResource("3_sgbe7")
-region = Rect2(384, 0, 128, 128)
+region = Rect2(640, 256, 128, 128)
 
 [node name="MachineTray" type="TextureRect"]
 scale = Vector2(0.75, 0.75)

@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8g5ee6omtr5d"]
+
+[ext_resource type="Texture2D" uid="uid://f5ey7k8xldjp" path="res://UI/picker_tray/color_picker_button.png" id="1_1y6eg"]
+[ext_resource type="Script" path="res://UI/picker_tray/color_picker_button.gd" id="1_7gyub"]
+
+[node name="PickerButton" type="Button"]
+custom_minimum_size = Vector2(128, 128)
+offset_right = 8.0
+offset_bottom = 8.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+flat = true
+script = ExtResource("1_7gyub")
+
+[node name="img" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("1_1y6eg")
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

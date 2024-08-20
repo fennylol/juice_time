@@ -55,6 +55,7 @@ const DIR_FROM_TILE: Dictionary = {
 }
 
 ## TILE AND COLOR DATA 
+signal colors(colors: Array)
 enum {COLOR, POSITION}
 const NULL_BOTTLE_COLOR = Color.BLACK
 var LAYER_COLOR_DICT = {}
@@ -181,7 +182,7 @@ func place_tutorial(c0, c1):
 	place_generator(Vector2i(-7,-5))
 	place_filler(c0, Vector2i(-9,-3))
 	place_filler(c1, Vector2i(-7,-1))
-	place_flipper(Vector2i.LEFT, Vector2i(-7,-3))
+	place_flipper(Vector2i.LEFT, Vector2i.DOWN, Vector2i(-7,-3))
 	place_mixer(c0, c1, Vector2(-7,0))
 	place_truck(mix_colors(c0, c1), Vector2i(-8,2))
 
@@ -207,7 +208,7 @@ func place_new_autotiles(level: int, r: int):
 	place_filler(c1 if level > easy_cutoff else c0, pos)
 	place_truck(mix_colors(c0, c1) if level > easy_cutoff else c0, truck_pos)
 
-
+func send_colors(): colors.emit(LAYER_COLOR_DICT.keys())
 
 func process_world_tick(tick_delta: float):
 	## CREATE ATTEMPT ARRAYS. 
@@ -504,13 +505,11 @@ func hover_machine(type: String, point: Vector2):
 	GHOST_MACHINES.set_layer_modulate(0, color)
 	machine_hovering.emit(color == valid_placement)
 
-func place_machine(type: String, point: Vector2):
+func place_machine(type: String, point: Vector2, data: Array):
+	print(data)
 	var pos = MACHINE_TILES.local_to_map(point)
 	var conveyor_beneath: bool = CONVEYOR_TILES.get_used_cells(0).has(pos)
 	var success: bool = false
-	var c0: Color
-	var c1: Color
-	var dir = Vector2i.UP
 	match type:
 		"generator": 
 			if not conveyor_beneath: 
@@ -518,11 +517,11 @@ func place_machine(type: String, point: Vector2):
 				success = true
 		"flipper":
 			if conveyor_beneath: 
-				place_flipper(dir, pos)
+				place_flipper(data[0] ,data[1] , pos)
 				success = true
 		"mixer":
 			if conveyor_beneath: 
-				place_mixer(c0, c1, pos)
+				place_mixer(data[0], data[1], pos)
 				success = true
 
 func place_generator(pos: Vector2i):
@@ -546,12 +545,12 @@ func place_filler(c: Color, pos: Vector2i):
 	}
 	FILLER_STATE.merge(new_dict_entry)
 
-func place_flipper(d: Vector2i, pos: Vector2i):
+func place_flipper(d0: Vector2i, d1: Vector2i, pos: Vector2i):
 	MACHINE_TILES.set_cell(0, pos, machine_source, TILE_ATLAS["flipper"])
 	var new_dict_entry = {
 		pos: {
-			"direction0": DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)],
-			"direction1": d,
+			"direction0": d0,
+			"direction1": d1,
 			"use_direction0": true,
 			"flipping_now": false,
 			"flipping_next": false
