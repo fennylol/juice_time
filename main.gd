@@ -19,7 +19,9 @@ var target_zoom: float = 0.5
 const SPRITE_WIDTH = 128
 const LEVEL_TILE_MULTIPLIER = 2
 
-var game_paused = false
+var game_paused = true
+var game_lost = false
+
 var time_since_tick = 0
 const FAST_LENGTH = 0.1
 const DEFAULT_LENGTH = 1
@@ -76,6 +78,11 @@ func _input(event):
 			target_point += amount * TARGET_SPEED
 
 func _process(delta):
+	if game_lost: return
+	if Input.is_action_just_pressed("pause"):
+		game_paused = not game_paused
+		GUI.toggle_paused(game_paused)
+	
 	if game_paused: return
 	
 	## HIDE MOUSE WHILE MOVING CAMERA
@@ -114,7 +121,10 @@ func speed_modulation(multi : float):
 
 func on_game_loose(fail_point: Vector2i):
 	print("lost the game at: ", fail_point)
-
+	game_lost = true
+	game_paused = true
+	GUI.toggle_paused(true)
+	GUI.on_loose_game_screen()
 
 func calculate_zoom_for_visible_space(desired_visible_space: float) -> float:
 	var viewport_size = get_viewport_rect().size

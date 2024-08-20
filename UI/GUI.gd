@@ -8,6 +8,8 @@ var MAIN_MENU
 @onready var PICKER_TRAY = $CanvasLayer/main/body/PickerTray
 @onready var CANVAS = $CanvasLayer
 @onready var MAIN_CONTAINER = $CanvasLayer/main
+@onready var PAUSE_MENU = $CanvasLayer/pause_menu
+@onready var PAUSE_MENU_LABEL = $CanvasLayer/pause_menu/PanelContainer/MarginContainer/VBoxContainer/Label
 
 signal attempt_conveyor(startpoint: Vector2i, endpoint: Vector2i)
 signal attempt_machine(type: String, point: Vector2i, data: Array)
@@ -37,6 +39,8 @@ var is_dragging: bool = false
 var is_selecting: bool = false
 
 func _ready():
+	PAUSE_MENU.hide()
+	
 	adjust_machine_tray_target_pos()
 	get_tree().root.size_changed.connect(_on_viewport_size_changed)
 	MAIN_MENU = menu_node.instantiate()
@@ -174,3 +178,16 @@ func bring_picker_to_front(front: bool):
 	else: 
 		PICKER_TRAY.visible = false
 		CANVAS.move_child(MAIN_CONTAINER, 0)
+
+func on_loose_game_screen():
+	PAUSE_MENU_LABEL.text = "YOU HAD A GOOD RUN."
+	PAUSE_MENU.show()
+
+func toggle_paused(paused : bool):
+	if paused:
+		PAUSE_MENU.show()
+	else:
+		PAUSE_MENU.hide()
+
+func _on_return_pressed():
+	get_parent().queue_free()
