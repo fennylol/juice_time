@@ -59,6 +59,7 @@ enum {COLOR, POSITION}
 const NULL_BOTTLE_COLOR = Color.BLACK
 var LAYER_COLOR_DICT = {}
 var COLOR_COMPLEXITY_DICT = {
+	#1 : [Color.CRIMSON,Color.SPRING_GREEN,Color.DEEP_SKY_BLUE] #ALT COLORS
 	1 : [Color.RED,Color.GREEN,Color.BLUE]
 }
 
@@ -137,6 +138,16 @@ var TRUCK_STATE: Dictionary = {
 #region UTILITY
 
 func _ready():
+	print(is_safe_for_truck(Vector2i(-5,-4)))
+	print(is_safe_for_truck(Vector2i(-4,-4)))
+	print(is_safe_for_truck(Vector2i(-5,-3)))
+	print(is_safe_for_truck(Vector2i(-4,-3)))
+	print(is_safe_for_truck(Vector2i(-5,-2)))
+	print(is_safe_for_truck(Vector2i(-4,-2)))
+	print(is_safe_for_truck(Vector2i(-5,-1)))
+	print(is_safe_for_truck(Vector2i(-4,-1)))
+	print(is_safe_for_truck(Vector2i(-5,0)))
+	print(is_safe_for_truck(Vector2i(-4,0)))
 	## CREATE AND STORE A NEW TileMapPattern OUT OF THE GIVEN TILEMAP POSITIONS
 	for pat_name in patterns:
 		patterns[pat_name]["pattern"] = AUTO_TILES.get_pattern(0, patterns[pat_name]["pos"])
@@ -258,16 +269,8 @@ func place_new_autotiles(level: int, r: int):
 	place_truck(mixed_color, truck_pos)
 	if level > 3 and not (randi_range(0, level) % 5): place_basic_fillers(r)
 
-
-#func is_safe_for_truck(pos: Vector2i): return not (CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)))
-func is_safe_for_truck(pos: Vector2i):
-	if  CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or \
-		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or \
-		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or \
-		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or \
-		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or \
-		CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)): return false
-	else: return true
+# LMAO holy based, here it is :)))
+func is_safe_for_truck(pos: Vector2i):return not (CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,2)))
 
 func send_colors(): colors.emit(LAYER_COLOR_DICT.keys())
 
