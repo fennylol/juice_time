@@ -138,16 +138,6 @@ var TRUCK_STATE: Dictionary = {
 #region UTILITY
 
 func _ready():
-	print(is_safe_for_truck(Vector2i(-5,-4)))
-	print(is_safe_for_truck(Vector2i(-4,-4)))
-	print(is_safe_for_truck(Vector2i(-5,-3)))
-	print(is_safe_for_truck(Vector2i(-4,-3)))
-	print(is_safe_for_truck(Vector2i(-5,-2)))
-	print(is_safe_for_truck(Vector2i(-4,-2)))
-	print(is_safe_for_truck(Vector2i(-5,-1)))
-	print(is_safe_for_truck(Vector2i(-4,-1)))
-	print(is_safe_for_truck(Vector2i(-5,0)))
-	print(is_safe_for_truck(Vector2i(-4,0)))
 	## CREATE AND STORE A NEW TileMapPattern OUT OF THE GIVEN TILEMAP POSITIONS
 	for pat_name in patterns:
 		patterns[pat_name]["pattern"] = AUTO_TILES.get_pattern(0, patterns[pat_name]["pos"])

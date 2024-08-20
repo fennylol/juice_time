@@ -25,6 +25,7 @@ offset_bottom = 40.0
 
 [node name="BG0" type="TextureRect" parent="sprite_BG"]
 custom_minimum_size = Vector2(16384, 16384)
+layout_mode = 0
 offset_right = 16384.0
 offset_bottom = 16384.0
 texture = ExtResource("2_acnnr")
@@ -32,6 +33,7 @@ stretch_mode = 1
 
 [node name="BG1" type="TextureRect" parent="sprite_BG"]
 custom_minimum_size = Vector2(16384, 16384)
+layout_mode = 0
 offset_right = 16384.0
 offset_bottom = 16384.0
 rotation = 1.5708
@@ -41,6 +43,7 @@ flip_v = true
 
 [node name="BG2" type="TextureRect" parent="sprite_BG"]
 custom_minimum_size = Vector2(16384, 16384)
+layout_mode = 0
 offset_right = 16384.0
 offset_bottom = 16384.0
 rotation = 3.14159
@@ -51,6 +54,7 @@ flip_v = true
 
 [node name="BG3" type="TextureRect" parent="sprite_BG"]
 custom_minimum_size = Vector2(16384, 16384)
+layout_mode = 0
 offset_right = 16384.0
 offset_bottom = 16384.0
 rotation = 4.71239
