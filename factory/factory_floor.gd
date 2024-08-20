@@ -62,6 +62,7 @@ var COLOR_COMPLEXITY_DICT = {
 	#1 : [Color.CRIMSON,Color.SPRING_GREEN,Color.DEEP_SKY_BLUE] #ALT COLORS
 	1 : [Color.RED,Color.GREEN,Color.BLUE]
 }
+var last_mouse_dir := Vector2.ZERO
 
 const TILE_ATLAS: Dictionary = {
 	"bottle"       : Vector2i(0,4),
@@ -260,9 +261,24 @@ func place_new_autotiles(level: int, r: int):
 	if level > 3 and not (randi_range(0, level) % 5): place_basic_fillers(r)
 
 # LMAO holy based, here it is :)))
-func is_safe_for_truck(pos: Vector2i):return not (CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,2)))
+func is_safe_for_truck(pos: Vector2i): return not (CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,2)))
 
 func send_colors(): colors.emit(LAYER_COLOR_DICT.keys())
+
+func _input(event):
+	if event is InputEventMouseMotion:
+		if abs(event.relative): 
+			var amount = event.relative
+			if abs(amount.x) >= abs(amount.y): 
+				amount.x = amount.x / abs(amount.x)
+				amount.y = 0
+			else: 
+				amount.y = amount.y / abs(amount.y)
+				amount.x = 0
+			if is_nan(amount.x): amount.x = 0
+			if is_nan(amount.y): amount.y = 0
+			last_mouse_dir = amount
+
 
 func process_world_tick(tick_delta: float):
 	## CREATE ATTEMPT ARRAYS. 
@@ -448,9 +464,10 @@ func hover_conveyors(starting: bool, point: Vector2i):
 	if starting: hover_start = pos
 	
 	var diff: Vector2i = pos - hover_start
-	var direction: Vector2i = Vector2i.LEFT if abs(diff.x) >= abs(diff.y) and diff.x < 0 else \
+	var direction: Vector2i = last_mouse_dir if not diff else \
+							  Vector2i.LEFT if abs(diff.x) > abs(diff.y) and diff.x < 0 else \
 							  Vector2i.RIGHT if abs(diff.x) > abs(diff.y) and diff.x > 0 else \
-							  Vector2i.UP if abs(diff.x) <= abs(diff.y) and diff.y < 0 else \
+							  Vector2i.UP if abs(diff.x) < abs(diff.y) and diff.y < 0 else \
 							  Vector2i.DOWN
 	
 	
