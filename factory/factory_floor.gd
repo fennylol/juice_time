@@ -7,7 +7,7 @@ extends Node2D
 @onready var GHOST_MACHINES: TileMap = $ghost_machines
 @onready var GHOST_CONVEYORS: TileMap = $ghost_conveyors
 
-signal shipped_truck()
+signal shipped_truck(value: int, amount: int)
 
 var valid_placement := Color(Color.PALE_GREEN, 0.5)
 var invalid_placement := Color(Color.PALE_VIOLET_RED, 0.5)
@@ -132,7 +132,8 @@ var TRUCK_STATE: Dictionary = {
 		"hue" : NULL_BOTTLE_HUE,
 		"area" : [Vector2i.ZERO],
 		"filled": 0,
-		"since_last_filled": 0
+		"since_last_filled": 0,
+		"value": 0
 	}
 }
 
@@ -180,7 +181,6 @@ func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
 
 func mix_colors(c0: Color, c1: Color) -> Color: return c0.blend(Color(c1, c1.a * 0.5))
-
 func mix_hues(h0: float, h1: float) -> float:
 	## CONVERT 0-1 HUES TO 0-360 HUES SUCH THAT A0 IS ALWAYS LESS THAN OR EQUAL TO A1
 	var a0: int = h0*360 if h0 <= h1 else h1*360
@@ -192,8 +192,6 @@ func mix_hues(h0: float, h1: float) -> float:
 	
 	pass
 	return h_mix
-
-func round_to_digit(n: float, d: int) -> float: return round(n * pow(10.0, d)) / pow(10.0, d)
 
 ## GIVEN A TILEMAP POSITION "POS", RETURN THE BOTTLE AT THAT POSITION'S JUICE COLOR
 func find_color_from_pos(pos: Vector2i) -> Color:
@@ -235,6 +233,15 @@ func find_layer_from_hue(h: float) -> int:
 			MACHINE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
 			AUTO_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
 		return LAYER_COLOR_DICT[h]
+
+func round_to_digit(n: float, d: int) -> float: return round(n * pow(10.0, d)) / pow(10.0, d)
+
+func angle_between(h0: float, h1: float) -> int:
+	var angle1: int = h0*360 if h0 <= h1 else h1*360
+	var angle2: int = h1*360 if h0 <= h1 else h0*360
+	var angle1a = angle1 + 360
+
+	return min(abs(angle2 - angle1),abs(angle1a - angle2))
 
 # TODO: turn into a field in LAYER_COLOR_DICT
 func set_color_complexity(h: float, tier: int):
@@ -355,9 +362,12 @@ func process_world_tick(tick_delta: float):
 		if TRUCK_STATE[pos]["filled"] == 4:
 			for offset in bottles_in_truck:
 				MACHINE_TILES.erase_cell(0, pos+offset)
-				MACHINE_TILES.erase_cell(find_layer_from_hue(TRUCK_STATE[pos]["hue"]), pos+offset)
+				for k in LAYER_COLOR_DICT.keys():
+					var layer = LAYER_COLOR_DICT[k]
+					MACHINE_TILES.erase_cell(layer, pos+offset)
+			shipped_truck.emit(TRUCK_STATE[pos]["value"], 1)
 			TRUCK_STATE[pos]["filled"] = 0
-			shipped_truck.emit()
+			TRUCK_STATE[pos]["value"] = 0
 	
 	## BOTTLE LOCATION CHECK LOOP
 	for pos in BOTTLE_TILES.get_used_cells(0):
@@ -406,19 +416,27 @@ func process_world_tick(tick_delta: float):
 		else: ## TRUCKS AND PLAIN CONVEYORS
 			for truck in TRUCK_STATE.keys():
 				if TRUCK_STATE[truck]["area"].has(new_pos): 
+					## ADDS A DUPLICATE ATTEMPT THAT WILL GET REMOVED ON THE DUPLICATE CHECK LATER
 					# TODO: find a better way to nullify this move
 					attempt_array.append(new_attempt)
-					if TRUCK_STATE[truck]["hue"] == find_hue_from_pos(pos):
+					
+					## ALWAYS ADD A NON-EMPTY BOTTLE TO THE TRUCK
+					if new_attempt[HUE] != NULL_BOTTLE_HUE:
 						if TRUCK_STATE[truck]["filled"] < 4:
-							var layer_index = find_layer_from_hue(TRUCK_STATE[truck]["hue"])
 							MACHINE_TILES.set_cell(0, truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["bottle"])
-							MACHINE_TILES.set_cell(layer_index, truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["juice"])
+							MACHINE_TILES.set_cell(find_layer_from_hue(new_attempt[HUE]), truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["juice"])
 							TRUCK_STATE[truck]["filled"] = TRUCK_STATE[truck]["filled"] + 1
-						## CHECK FOR TRUCK WARNING_TIMER AND REMOVE IF EXISTS
-						## SET "SINCE LAST FILLED" TO 0
-						var warning_timer_location = truck+Vector2i.DOWN+Vector2i.DOWN
-						MACHINE_TILES.erase_cell(0,warning_timer_location)
-						TRUCK_STATE[truck]["since_last_filled"] = 0
+							
+							## TODO: adjust the function to have a non-linear falloff
+							var difference = angle_between(new_attempt[HUE], TRUCK_STATE[truck]["hue"])
+							var value_added = floor((360 - difference) / 36)
+							TRUCK_STATE[truck]["value"] += value_added
+						
+					## CHECK FOR TRUCK WARNING_TIMER AND REMOVE IF EXISTS
+					## SET "SINCE LAST FILLED" TO 0
+					var warning_timer_location = truck+Vector2i.DOWN+Vector2i.DOWN
+					MACHINE_TILES.erase_cell(0,warning_timer_location)
+					TRUCK_STATE[truck]["since_last_filled"] = 0
 			## ELSE, ADD BOTTLE LOCATION AND COLOR TO "ATTEMPT" ARRAY
 			attempt_array.append(new_attempt)
 	
@@ -690,7 +708,8 @@ func place_truck(h: float, pos: Vector2i):
 			"hue": h,
 			"area": truck_area,
 			"filled": 0,
-			"since_last_filled": 0
+			"since_last_filled": 0,
+			"value": 0
 		}
 	}
 	TRUCK_STATE.merge(new_dict_entry)

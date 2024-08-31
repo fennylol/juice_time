@@ -56,7 +56,8 @@ func forward_request_colors(): FACTORY_FLOOR.send_colors()
 func forward_machine_hovering(success: bool): GUI.hover_success(success)
 func forward_colors(colors: Array): GUI.recieve_colors(colors)
 
-func ship_truck(amount: int = 1):
+func ship_truck(value: int, amount: int = 1):
+	print("gained $", value, ".")
 	trucks_till_next_lvl -= amount
 	## INCREMENT LEVEL
 	if trucks_till_next_lvl <= 0: 
