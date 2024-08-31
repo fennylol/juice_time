@@ -55,13 +55,13 @@ const DIR_FROM_TILE: Dictionary = {
 
 ## TILE AND COLOR DATA 
 signal colors(colors: Array)
-enum {COLOR, POSITION}
-const NULL_BOTTLE_COLOR = Color.BLACK
+enum {HUE, POSITION}
+const NULL_BOTTLE_HUE = -1 #Color.BLACK
+var GLOBAL_SATURATION = 0.5
+var GLOBAL_LIGHTNESS = 0.5
+var GLOBAL_PRECISION = 3
 var LAYER_COLOR_DICT = {}
-var COLOR_COMPLEXITY_DICT = {
-	#1 : [Color.CRIMSON,Color.SPRING_GREEN,Color.DEEP_SKY_BLUE] #ALT COLORS
-	1 : [Color.RED,Color.GREEN,Color.BLUE]
-}
+var COLOR_COMPLEXITY_DICT = {}
 var last_mouse_dir := Vector2.ZERO
 
 const TILE_ATLAS: Dictionary = {
@@ -104,7 +104,7 @@ var GENERATOR_STATE: Dictionary = {
 }
 var FILLER_STATE: Dictionary = {
 	Vector2i.ZERO: {
-		"color": NULL_BOTTLE_COLOR
+		"hue": NULL_BOTTLE_HUE
 	}
 }
 var FLIPPER_STATE: Dictionary = {
@@ -118,8 +118,8 @@ var FLIPPER_STATE: Dictionary = {
 }
 var MIXER_STATE: Dictionary = {
 	Vector2i.ZERO: {
-		"color0": NULL_BOTTLE_COLOR,
-		"color1": NULL_BOTTLE_COLOR,
+		"hue0": NULL_BOTTLE_HUE,
+		"hue1": NULL_BOTTLE_HUE,
 		"color0_filled": false,
 		"color1_filled": false,
 		"outputting_now": false,
@@ -129,7 +129,7 @@ var MIXER_STATE: Dictionary = {
 var bottles_in_truck = [Vector2i(1,1),Vector2i(0,1),Vector2i(1,0),Vector2i(0,0)]
 var TRUCK_STATE: Dictionary = {
 	Vector2i.ZERO: {
-		"color" : NULL_BOTTLE_COLOR,
+		"hue" : NULL_BOTTLE_HUE,
 		"area" : [Vector2i.ZERO],
 		"filled": 0,
 		"since_last_filled": 0
@@ -144,27 +144,70 @@ func _ready():
 		patterns[pat_name]["pattern"] = AUTO_TILES.get_pattern(0, patterns[pat_name]["pos"])
 		for pos in patterns[pat_name]["pos"]: AUTO_TILES.erase_cell(0, pos)
 	
+	## SET INITIAL COLOR COMPLETITY AS OKLAB HUES
+	var new_color_complexity_dict_entry = {1: [0.0, 0.33, 0.66]}
+	COLOR_COMPLEXITY_DICT.merge(new_color_complexity_dict_entry)
 	
+	## CLEAR ALL TRUCK AND MACHINE STATE DICTIONARIES
 	GENERATOR_STATE.clear()
 	FILLER_STATE.clear()
 	FLIPPER_STATE.clear()
 	MIXER_STATE.clear()
 	TRUCK_STATE.clear()
-	place_tutorial()
-
+	
+	## PLACE TUTORIAL TILES
+	var TDN = two_different_nums(2)
+	var h0 = COLOR_COMPLEXITY_DICT[1][TDN[0]]
+	var h1 = COLOR_COMPLEXITY_DICT[1][TDN[1]]
+	set_color_complexity(mix_hues(h0, h1), 2)
+	
+	place_generator(Vector2i(2,-4))
+	place_generator(Vector2i(-7,1))
+	place_generator(Vector2i(-4,-2))
+	
+	place_filler(h0, Vector2i(7,-3))
+	place_filler(h1, Vector2i(5, 0))
+	place_filler(h0, Vector2i(-1,-1))
+	place_filler(h1, Vector2i(-5, 2))
+	
+	place_flipper(Vector2i.RIGHT, Vector2i.DOWN, Vector2i(4,-3))
+	place_mixer(h0, h1, Vector2(7,0))
+	place_mixer(h1, h0, Vector2(3,-1))
+	place_truck(mix_hues(h0, h1), Vector2i(3,1))
+	place_basic_fillers(20)
 
 func modulate_speed(multi : float):
 	var conveyor_tileset : TileSet = CONVEYOR_TILES.tile_set
 
 func mix_colors(c0: Color, c1: Color) -> Color: return c0.blend(Color(c1, c1.a * 0.5))
 
+func mix_hues(h0: float, h1: float) -> float:
+	## CONVERT 0-1 HUES TO 0-360 HUES SUCH THAT A0 IS ALWAYS LESS THAN OR EQUAL TO A1
+	var a0: int = h0*360 if h0 <= h1 else h1*360
+	var a1: int = h1*360 if h0 <= h1 else h0*360
+	
+	## TODO: MAKE THIS WORK WITH WRAPAROUND ANGLES.
+	var a_mix = ((a0 + a1) / 2) % 360
+	var h_mix: float = round_to_digit((float(a_mix) / 360.0), GLOBAL_PRECISION) 
+	
+	pass
+	return h_mix
+
+func round_to_digit(n: float, d: int) -> float: return round(n * pow(10.0, d)) / pow(10.0, d)
+
 ## GIVEN A TILEMAP POSITION "POS", RETURN THE BOTTLE AT THAT POSITION'S JUICE COLOR
 func find_color_from_pos(pos: Vector2i) -> Color:
 	for layer in range(1, BOTTLE_TILES.get_layers_count()):
 		if BOTTLE_TILES.get_used_cells(layer).has(pos):
 			return BOTTLE_TILES.get_layer_modulate(layer)
-	return NULL_BOTTLE_COLOR
+	return NULL_BOTTLE_HUE
+func find_hue_from_pos(pos: Vector2i) -> float:
+	for layer in range(1, BOTTLE_TILES.get_layers_count()):
+		if BOTTLE_TILES.get_used_cells(layer).has(pos):
+			return BOTTLE_TILES.get_layer_name(layer).to_float()
+	return NULL_BOTTLE_HUE
 
+## GIVEN A SPECIFIC COLOR, RETURN THE UNIVERSAL LAYER THAT IS ASSOCIATED WITH THAT COLOR
 func find_layer_from_color(c: Color) -> int:
 		if not LAYER_COLOR_DICT.has(c): 
 			var layer_index = LAYER_COLOR_DICT.keys().size()+1
@@ -177,40 +220,34 @@ func find_layer_from_color(c: Color) -> int:
 			MACHINE_TILES.set_layer_modulate(layer_index, c)
 			AUTO_TILES.set_layer_modulate(layer_index, c)
 		return LAYER_COLOR_DICT[c]
+func find_layer_from_hue(h: float) -> int:
+		if not LAYER_COLOR_DICT.has(h): 
+			var layer_index = LAYER_COLOR_DICT.keys().size()+1
+			LAYER_COLOR_DICT[h] = layer_index
+			## CREATE NEW LAYERS IN ALL APPLICABLE TILEMAPS AND MODULATE
+			BOTTLE_TILES.add_layer(layer_index)
+			MACHINE_TILES.add_layer(layer_index)
+			AUTO_TILES.add_layer(layer_index)
+			BOTTLE_TILES.set_layer_name(layer_index, str(h))
+			MACHINE_TILES.set_layer_name(layer_index, str(h))
+			AUTO_TILES.set_layer_name(layer_index, str(h))
+			BOTTLE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
+			MACHINE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
+			AUTO_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
+		return LAYER_COLOR_DICT[h]
 
 # TODO: turn into a field in LAYER_COLOR_DICT
-func set_color_complexity(c: Color, tier: int):
+func set_color_complexity(h: float, tier: int):
 	if COLOR_COMPLEXITY_DICT.keys().has(tier):
-		if not COLOR_COMPLEXITY_DICT[tier].has(c):
-			COLOR_COMPLEXITY_DICT[tier].append(c)
+		if not COLOR_COMPLEXITY_DICT[tier].has(h):
+			COLOR_COMPLEXITY_DICT[tier].append(h)
 	else: 
-		COLOR_COMPLEXITY_DICT[tier] = [c]
+		COLOR_COMPLEXITY_DICT[tier] = [h]
 
 func two_different_nums(max: int) -> Array[int]:
 	var rand0 = randi_range(0,max)
 	var rand1 = randi_range(0,max-1)
 	return [rand0, rand1 + (1 if rand0 <= rand1 else 0)]
-
-func place_tutorial():
-	var TDN = two_different_nums(2)
-	var c0 = COLOR_COMPLEXITY_DICT[1][TDN[0]]
-	var c1 = COLOR_COMPLEXITY_DICT[1][TDN[1]]
-	set_color_complexity(mix_colors(c0, c1), 2)
-	
-	place_generator(Vector2i(2,-4))
-	place_generator(Vector2i(-7,1))
-	place_generator(Vector2i(-4,-2))
-	
-	place_filler(c0, Vector2i(7,-3))
-	place_filler(c1, Vector2i(5, 0))
-	place_filler(c0, Vector2i(-1,-1))
-	place_filler(c1, Vector2i(-5, 2))
-	
-	place_flipper(Vector2i.RIGHT, Vector2i.DOWN, Vector2i(4,-3))
-	place_mixer(c0, c1, Vector2(7,0))
-	place_mixer(c1, c0, Vector2(3,-1))
-	place_truck(mix_colors(c0, c1), Vector2i(3,1))
-	place_basic_fillers(20)
 
 func place_basic_fillers(r: int):
 	for c in COLOR_COMPLEXITY_DICT[1]:
@@ -235,14 +272,14 @@ func place_new_autotiles(level: int, r: int):
 		TDN.append(randi_range(0, COLOR_COMPLEXITY_DICT[cmplx0].size()))
 		TDN.append(randi_range(0, COLOR_COMPLEXITY_DICT[cmplx1].size()))
 	
-	var c0: Color = COLOR_COMPLEXITY_DICT[cmplx0][TDN[0]]
-	var c1: Color = COLOR_COMPLEXITY_DICT[cmplx1][TDN[1]]
+	var h0: float = COLOR_COMPLEXITY_DICT[cmplx0][TDN[0]]
+	var h1: float = COLOR_COMPLEXITY_DICT[cmplx1][TDN[1]]
 	
-	var mixed_color: Color = mix_colors(c0, c1)
-	set_color_complexity(mixed_color, cmplx0+cmplx1)
+	var mixed_hue: float = mix_hues(h0, h1)
+	set_color_complexity(mixed_hue, cmplx0+cmplx1)
 	
 	## ADD NEW COLOR TO DICTIONARIES LOL
-	find_layer_from_color(mixed_color)
+	find_layer_from_hue(mixed_hue)
 	
 	# TODO check all 6 truck tiles
 	var pos := Vector2i(randi_range(-r,r), randi_range(-r,r))
@@ -256,11 +293,13 @@ func place_new_autotiles(level: int, r: int):
 		while CONVEYOR_TILES.get_used_cells(0).has(pos) or MACHINE_TILES.get_used_cells(0).has(pos) or AUTO_TILES.get_used_cells(0).has(pos):
 			pos = Vector2i(randi_range(-r,r), randi_range(-r,r))
 	
-	place_filler(c0, pos)
-	place_truck(mixed_color, truck_pos)
+	place_filler(h0, pos)
+	place_truck(mixed_hue, truck_pos)
 	if level > 3 and not (randi_range(0, level) % 5): place_basic_fillers(r)
 
 # LMAO holy based, here it is :)))
+## CHECKS FOR AN EXISTING TILE AT EACH OF THE TRUCK'S 6 LOCATIONS IN THE CONVEYOR, AUTO, AND MACHINE TILEMAPS
+## RETURNS TRUE ("SAFE") ONLY IF ALL 18 CHECKS RETURN FALSE
 func is_safe_for_truck(pos: Vector2i): return not (CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,0)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,1)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(0,2)) or CONVEYOR_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or MACHINE_TILES.get_used_cells(0).has(pos + Vector2i(1,2)) or AUTO_TILES.get_used_cells(0).has(pos + Vector2i(1,2)))
 
 func send_colors(): colors.emit(LAYER_COLOR_DICT.keys())
@@ -279,7 +318,6 @@ func _input(event):
 			if is_nan(amount.y): amount.y = 0
 			last_mouse_dir = amount
 
-
 func process_world_tick(tick_delta: float):
 	## CREATE ATTEMPT ARRAYS. 
 	## THESE WILL BE FILLED WITH VECTOR2I POSITIONS OF WHERE THE BOTTLES SHOULD BE MOVING TO
@@ -294,6 +332,7 @@ func process_world_tick(tick_delta: float):
 		TRUCK_STATE[pos]["since_last_filled"] += tick_delta
 		var warning_timer_location = pos#+Vector2i.DOWN+Vector2i.DOWN
 		
+		## TODO: SIMPLIFY
 		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[0]:
 			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_0"])
 		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[1]:
@@ -307,7 +346,7 @@ func process_world_tick(tick_delta: float):
 		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[5]:
 			MACHINE_TILES.set_cell(0, warning_timer_location, machine_source, TILE_ATLAS["warning_timer_5"])
 		
-		## IF "SINCE LAST FILLED" IS GREATER THAN 60, SEND A "LOSE THE GAME" SIGNAL
+		## IF "SINCE LAST FILLED" IS GREATER THAN THE ACCEPTABLE TIME LIMIT, SEND A "LOSE THE GAME" SIGNAL
 		if TRUCK_STATE[pos]["since_last_filled"] >= warning_state[6]:
 			var fail_point = AUTO_TILES.map_to_local(pos)
 			loose_the_game.emit(fail_point)
@@ -316,7 +355,7 @@ func process_world_tick(tick_delta: float):
 		if TRUCK_STATE[pos]["filled"] == 4:
 			for offset in bottles_in_truck:
 				MACHINE_TILES.erase_cell(0, pos+offset)
-				MACHINE_TILES.erase_cell(find_layer_from_color(TRUCK_STATE[pos]["color"]), pos+offset)
+				MACHINE_TILES.erase_cell(find_layer_from_hue(TRUCK_STATE[pos]["hue"]), pos+offset)
 			TRUCK_STATE[pos]["filled"] = 0
 			shipped_truck.emit()
 	
@@ -326,38 +365,37 @@ func process_world_tick(tick_delta: float):
 		## CHECK CONVEYOR DIRECTION UNDERNEATH AND CREATE A NEW ATTEMPT AT "NEXT POSITION"
 		var conveyor_dir = DIR_FROM_TILE[CONVEYOR_TILES.get_cell_atlas_coords(0, pos)]
 		var new_pos = pos + conveyor_dir
-		var new_attempt = [find_color_from_pos(pos), new_pos]
+		var new_attempt = [find_hue_from_pos(pos), new_pos]
 		
 		
 		## CHECK NEXT TILE FOR A MACHINE
 		## IF MACHINE, PASS FUNCTIONALITY TO MACHINE
 		if MIXER_STATE.has(new_pos):
 			var mixer = MIXER_STATE[new_pos]
-			var bottle_color = find_color_from_pos(pos)
-			var c0: Color = mixer["color0"]
-			var c1: Color = mixer["color1"]
+			var bottle_color = find_hue_from_pos(pos)
+			var h0: float = mixer["hue0"]
+			var h1: float = mixer["hue1"]
 			
 			## FILL MIXER IF COLOR IS NEEDED
-			if bottle_color == c0 and not mixer["color0_filled"]: 
+			if bottle_color == h0 and not mixer["color0_filled"]: 
 				mixer["color0_filled"] = true
-				MACHINE_TILES.set_cell(find_layer_from_color(c0), new_pos, 0, TILE_ATLAS["mixer_color0_filled"])
-			elif bottle_color == c1 and not mixer["color1_filled"]: 
+				MACHINE_TILES.set_cell(find_layer_from_hue(h0), new_pos, 0, TILE_ATLAS["mixer_color0_filled"])
+			elif bottle_color == h1 and not mixer["color1_filled"]: 
 				mixer["color1_filled"] = true
-				MACHINE_TILES.set_cell(find_layer_from_color(c1), new_pos, 0, TILE_ATLAS["mixer_color1_filled"])
+				MACHINE_TILES.set_cell(find_layer_from_hue(h1), new_pos, 0, TILE_ATLAS["mixer_color1_filled"])
 			
 			## PLACE MIXED COLOR WHEN ALL INPUTS FILLED
 			if mixer["color0_filled"] and mixer["color1_filled"]:
-				var output_color = mix_colors(c0, c1)
-				attempt_array.append([output_color,new_pos])
+				var output_hue = mix_hues(h0, h1)
+				attempt_array.append([output_hue,new_pos])
 				mixer["color0_filled"] = false
 				mixer["color1_filled"] = false
 				mixer["outputting_next"] = true
-				
-			
+		
 		elif FILLER_STATE.has(new_pos):
 			## FILLERS REPLACE BOTTLE WITH A BOTTLE OF THE FILLER'S COLOR
-			var fill_color = FILLER_STATE[new_pos]["color"]
-			new_attempt = [fill_color, new_pos]
+			var fill_hue = FILLER_STATE[new_pos]["hue"]
+			new_attempt = [fill_hue, new_pos]
 			attempt_array.append(new_attempt)
 			
 		elif FLIPPER_STATE.has(new_pos):
@@ -370,16 +408,15 @@ func process_world_tick(tick_delta: float):
 				if TRUCK_STATE[truck]["area"].has(new_pos): 
 					# TODO: find a better way to nullify this move
 					attempt_array.append(new_attempt)
-					if TRUCK_STATE[truck]["color"] == find_color_from_pos(pos):
+					if TRUCK_STATE[truck]["hue"] == find_hue_from_pos(pos):
 						if TRUCK_STATE[truck]["filled"] < 4:
-							var layer_index = find_layer_from_color(TRUCK_STATE[truck]["color"])
+							var layer_index = find_layer_from_hue(TRUCK_STATE[truck]["hue"])
 							MACHINE_TILES.set_cell(0, truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["bottle"])
 							MACHINE_TILES.set_cell(layer_index, truck+bottles_in_truck[TRUCK_STATE[truck]["filled"]], bottle_source, TILE_ATLAS["juice"])
 							TRUCK_STATE[truck]["filled"] = TRUCK_STATE[truck]["filled"] + 1
 						## CHECK FOR TRUCK WARNING_TIMER AND REMOVE IF EXISTS
 						## SET "SINCE LAST FILLED" TO 0
 						var warning_timer_location = truck+Vector2i.DOWN+Vector2i.DOWN
-						#if MACHINE_TILES.get_cell_source_id(0, warning_timer_location) == -1:
 						MACHINE_TILES.erase_cell(0,warning_timer_location)
 						TRUCK_STATE[truck]["since_last_filled"] = 0
 			## ELSE, ADD BOTTLE LOCATION AND COLOR TO "ATTEMPT" ARRAY
@@ -390,7 +427,7 @@ func process_world_tick(tick_delta: float):
 		var genny = GENERATOR_STATE[pos]
 		if genny["time_since_generation"] >= genny["time_out"]:
 			if randf() <= genny["generation_odds"]:
-				attempt_array.append([NULL_BOTTLE_COLOR, pos + Vector2i.DOWN])
+				attempt_array.append([NULL_BOTTLE_HUE, pos + Vector2i.DOWN])
 				genny["time_since_generation"] = -1
 		genny["time_since_generation"] += 1
 	
@@ -411,9 +448,9 @@ func process_world_tick(tick_delta: float):
 	## CLEAR BOTTLE TILEMAP AND PLACE NEW BOTTLE FOR EACH SUCCESSFUL ATTEMPT IN APPROPRIATE LAYER
 	BOTTLE_TILES.clear()
 	for new_bottle in successful_attempts:
-		var layer_index = find_layer_from_color(new_bottle[COLOR])
+		var layer_index = find_layer_from_hue(new_bottle[HUE])
 		BOTTLE_TILES.set_cell(0, new_bottle[POSITION], bottle_source, TILE_ATLAS["bottle"])
-		if new_bottle[COLOR] != NULL_BOTTLE_COLOR:
+		if new_bottle[HUE] != NULL_BOTTLE_HUE:
 			BOTTLE_TILES.set_cell(layer_index, new_bottle[POSITION], bottle_source, TILE_ATLAS["juice"])
 	
 	## FLIP FLIPPERS IF FLIPPING
@@ -433,8 +470,8 @@ func process_world_tick(tick_delta: float):
 	for pos in MIXER_STATE:
 		var mixer = MIXER_STATE[pos]
 		if mixer["outputting_now"]:
-			if not mixer["color0_filled"]: MACHINE_TILES.set_cell(find_layer_from_color(mixer["color0"]), pos, 0, TILE_ATLAS["mixer_color0"])
-			if not mixer["color1_filled"]: MACHINE_TILES.set_cell(find_layer_from_color(mixer["color1"]), pos, 0, TILE_ATLAS["mixer_color1"])
+			if not mixer["color0_filled"]: MACHINE_TILES.set_cell(find_layer_from_hue(mixer["hue0"]), pos, 0, TILE_ATLAS["mixer_color0"])
+			if not mixer["color1_filled"]: MACHINE_TILES.set_cell(find_layer_from_hue(mixer["hue1"]), pos, 0, TILE_ATLAS["mixer_color1"])
 			mixer["outputting_now"] = false
 		if mixer["outputting_next"]:
 			mixer["outputting_now"] = true
@@ -605,12 +642,12 @@ func place_generator(pos: Vector2i):
 	}
 	GENERATOR_STATE.merge(new_dict_entry)
 
-func place_filler(c: Color, pos: Vector2i):
+func place_filler(h: float, pos: Vector2i):
 	AUTO_TILES.set_cell(0, pos, auto_tiles_source, TILE_ATLAS["filler"])
-	AUTO_TILES.set_cell(find_layer_from_color(c), pos, auto_tiles_source, TILE_ATLAS["filler_color"])
+	AUTO_TILES.set_cell(find_layer_from_hue(h), pos, auto_tiles_source, TILE_ATLAS["filler_color"])
 	var new_dict_entry = {
 		pos: {
-			"color": c
+			"hue": h
 		}
 	}
 	FILLER_STATE.merge(new_dict_entry)
@@ -628,15 +665,14 @@ func place_flipper(d0: Vector2i, d1: Vector2i, pos: Vector2i):
 	}
 	FLIPPER_STATE.merge(new_dict_entry)
 
-
-func place_mixer(c0: Color, c1: Color, pos: Vector2i):
+func place_mixer(h0: float, h1: float, pos: Vector2i):
 	MACHINE_TILES.set_cell(0, pos, machine_source, TILE_ATLAS["mixer"])
-	MACHINE_TILES.set_cell(find_layer_from_color(c0), pos, 0, TILE_ATLAS["mixer_color0"])
-	MACHINE_TILES.set_cell(find_layer_from_color(c1), pos, 0, TILE_ATLAS["mixer_color1"])
+	MACHINE_TILES.set_cell(find_layer_from_hue(h0), pos, 0, TILE_ATLAS["mixer_color0"])
+	MACHINE_TILES.set_cell(find_layer_from_hue(h1), pos, 0, TILE_ATLAS["mixer_color1"])
 	var new_dict_entry = {
 		pos: {
-			"color0": c0,
-			"color1": c1,
+			"hue0": h0,
+			"hue1": h1,
 			"color0_filled": false,
 			"color1_filled": false,
 			"outputting_now": false,
@@ -645,13 +681,13 @@ func place_mixer(c0: Color, c1: Color, pos: Vector2i):
 	}
 	MIXER_STATE.merge(new_dict_entry)
 
-func place_truck(c: Color, pos: Vector2i):
+func place_truck(h: float, pos: Vector2i):
 	AUTO_TILES.set_pattern(0, pos, patterns["truck"]["pattern"])
-	AUTO_TILES.set_pattern(find_layer_from_color(c), pos, patterns["truck_color"]["pattern"])
+	AUTO_TILES.set_pattern(find_layer_from_hue(h), pos, patterns["truck_color"]["pattern"])
 	var truck_area = [ pos , pos + Vector2i.RIGHT , pos + Vector2i.DOWN , pos + Vector2i.RIGHT + Vector2i.DOWN , pos + Vector2i.DOWN + Vector2i.DOWN , pos + Vector2i.DOWN + Vector2i.DOWN + Vector2i.RIGHT]
 	var new_dict_entry = {
 		pos: {
-			"color": c,
+			"hue": h,
 			"area": truck_area,
 			"filled": 0,
 			"since_last_filled": 0
