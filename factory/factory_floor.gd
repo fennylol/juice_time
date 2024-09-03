@@ -74,6 +74,7 @@ const TILE_ATLAS: Dictionary = {
 	"mixer"        : Vector2i(2,0),
 	"mixer_color0" : Vector2i(5,0),
 	"mixer_color1" : Vector2i(5,2),
+	"mixer_spouts" : Vector2i(4,2),
 	"mixer_color0_filled": Vector2i(5,1),
 	"mixer_color1_filled": Vector2i(5,3),
 	"warning_timer_0": Vector2i(0,5),
@@ -120,8 +121,8 @@ var MIXER_STATE: Dictionary = {
 	Vector2i.ZERO: {
 		"hue0": NULL_BOTTLE_HUE,
 		"hue1": NULL_BOTTLE_HUE,
-		"color0_filled": false,
-		"color1_filled": false,
+		"hue0_filled": false,
+		"hue1_filled": false,
 		"outputting_now": false,
 		"outputting_next": false
 	}
@@ -140,6 +141,7 @@ var TRUCK_STATE: Dictionary = {
 #region UTILITY
 
 func _ready():
+	find_layer_from_hue(NULL_BOTTLE_HUE)
 	## CREATE AND STORE A NEW TileMapPattern OUT OF THE GIVEN TILEMAP POSITIONS
 	for pat_name in patterns:
 		patterns[pat_name]["pattern"] = AUTO_TILES.get_pattern(0, patterns[pat_name]["pos"])
@@ -199,6 +201,7 @@ func find_color_from_pos(pos: Vector2i) -> Color:
 		if BOTTLE_TILES.get_used_cells(layer).has(pos):
 			return BOTTLE_TILES.get_layer_modulate(layer)
 	return NULL_BOTTLE_HUE
+
 func find_hue_from_pos(pos: Vector2i) -> float:
 	for layer in range(1, BOTTLE_TILES.get_layers_count()):
 		if BOTTLE_TILES.get_used_cells(layer).has(pos):
@@ -229,9 +232,10 @@ func find_layer_from_hue(h: float) -> int:
 			BOTTLE_TILES.set_layer_name(layer_index, str(h))
 			MACHINE_TILES.set_layer_name(layer_index, str(h))
 			AUTO_TILES.set_layer_name(layer_index, str(h))
-			BOTTLE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
-			MACHINE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
-			AUTO_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
+			if h != -1:
+				BOTTLE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
+				MACHINE_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
+				AUTO_TILES.set_layer_modulate(layer_index, Color.from_ok_hsl(h, GLOBAL_SATURATION, GLOBAL_LIGHTNESS))
 		return LAYER_COLOR_DICT[h]
 
 func round_to_digit(n: float, d: int) -> float: return round(n * pow(10.0, d)) / pow(10.0, d)
@@ -382,26 +386,26 @@ func process_world_tick(tick_delta: float):
 		## IF MACHINE, PASS FUNCTIONALITY TO MACHINE
 		if MIXER_STATE.has(new_pos):
 			var mixer = MIXER_STATE[new_pos]
-			var bottle_color = find_hue_from_pos(pos)
-			var h0: float = mixer["hue0"]
-			var h1: float = mixer["hue1"]
+			var bottle_hue = find_hue_from_pos(pos)
 			
-			## FILL MIXER IF COLOR IS NEEDED
-			if bottle_color == h0 and not mixer["color0_filled"]: 
-				mixer["color0_filled"] = true
-				MACHINE_TILES.set_cell(find_layer_from_hue(h0), new_pos, 0, TILE_ATLAS["mixer_color0_filled"])
-			elif bottle_color == h1 and not mixer["color1_filled"]: 
-				mixer["color1_filled"] = true
-				MACHINE_TILES.set_cell(find_layer_from_hue(h1), new_pos, 0, TILE_ATLAS["mixer_color1_filled"])
+			# TODO: RANDOMIZER AND COMPACT INTO ONE IFELSE
+			if not mixer["hue0_filled"]:
+				MACHINE_TILES.set_cell(find_layer_from_hue(bottle_hue), new_pos, 0, TILE_ATLAS["mixer_color0_filled"])
+				mixer["hue0"] = bottle_hue
+				mixer["hue0_filled"] = true
+			elif mixer["hue0"] != bottle_hue and not mixer["hue1_filled"]: 
+				MACHINE_TILES.set_cell(find_layer_from_hue(bottle_hue), new_pos, 0, TILE_ATLAS["mixer_color1_filled"])
+				mixer["hue1"] = bottle_hue
+				mixer["hue1_filled"] = true
 			
-			## PLACE MIXED COLOR WHEN ALL INPUTS FILLED
-			if mixer["color0_filled"] and mixer["color1_filled"]:
-				var output_hue = mix_hues(h0, h1)
+			### PLACE MIXED COLOR WHEN ALL INPUTS FILLED
+			if mixer["hue0_filled"] and mixer["hue1_filled"]:
+				var output_hue = mix_hues(mixer["hue0"], mixer["hue1"])
 				attempt_array.append([output_hue,new_pos])
-				mixer["color0_filled"] = false
-				mixer["color1_filled"] = false
+				mixer["hue0_filled"] = false
+				mixer["hue1_filled"] = false
 				mixer["outputting_next"] = true
-		
+			
 		elif FILLER_STATE.has(new_pos):
 			## FILLERS REPLACE BOTTLE WITH A BOTTLE OF THE FILLER'S COLOR
 			var fill_hue = FILLER_STATE[new_pos]["hue"]
@@ -488,8 +492,13 @@ func process_world_tick(tick_delta: float):
 	for pos in MIXER_STATE:
 		var mixer = MIXER_STATE[pos]
 		if mixer["outputting_now"]:
-			if not mixer["color0_filled"]: MACHINE_TILES.set_cell(find_layer_from_hue(mixer["hue0"]), pos, 0, TILE_ATLAS["mixer_color0"])
-			if not mixer["color1_filled"]: MACHINE_TILES.set_cell(find_layer_from_hue(mixer["hue1"]), pos, 0, TILE_ATLAS["mixer_color1"])
+			if not mixer["hue0_filled"]: 
+				MACHINE_TILES.erase_cell(find_layer_from_hue(mixer["hue0"]), pos)
+				mixer["hue0"] = NULL_BOTTLE_HUE
+			if not mixer["hue1_filled"]: 
+				MACHINE_TILES.erase_cell(find_layer_from_hue(mixer["hue1"]), pos)
+				mixer["hue1"] = NULL_BOTTLE_HUE
+			MACHINE_TILES.set_cell(find_layer_from_hue(NULL_BOTTLE_HUE), pos, 0, TILE_ATLAS["mixer_spouts"])
 			mixer["outputting_now"] = false
 		if mixer["outputting_next"]:
 			mixer["outputting_now"] = true
@@ -685,14 +694,13 @@ func place_flipper(d0: Vector2i, d1: Vector2i, pos: Vector2i):
 
 func place_mixer(h0: float, h1: float, pos: Vector2i):
 	MACHINE_TILES.set_cell(0, pos, machine_source, TILE_ATLAS["mixer"])
-	MACHINE_TILES.set_cell(find_layer_from_hue(h0), pos, 0, TILE_ATLAS["mixer_color0"])
-	MACHINE_TILES.set_cell(find_layer_from_hue(h1), pos, 0, TILE_ATLAS["mixer_color1"])
+	MACHINE_TILES.set_cell(find_layer_from_hue(NULL_BOTTLE_HUE), pos, 0, TILE_ATLAS["mixer_spouts"])
 	var new_dict_entry = {
 		pos: {
-			"hue0": h0,
-			"hue1": h1,
-			"color0_filled": false,
-			"color1_filled": false,
+			"hue0": NULL_BOTTLE_HUE,
+			"hue1": NULL_BOTTLE_HUE,
+			"hue0_filled": false,
+			"hue1_filled": false,
 			"outputting_now": false,
 			"outputting_next": false
 		}

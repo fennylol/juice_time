@@ -100,7 +100,8 @@ func _process(delta):
 					clear_ghosts.emit()
 					planned_start = get_global_mouse_position()
 					# when colors are recieved, the request will be sent
-					request_colors.emit()
+					attempt_machine.emit("mixer", planned_start, [-1, -1])
+					#request_colors.emit()
 				CONVEYOR:
 					planned_start = get_global_mouse_position()
 					is_dragging = true
