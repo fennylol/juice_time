@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3 uid="uid://d1xyjg3y63hy6"]
 
-[ext_resource type="Script" path="res://factory/factory_floor.gd" id="1_worr6"]
+[ext_resource type="Script" uid="uid://cyl74pumxed1m" path="res://factory/factory_floor.gd" id="1_worr6"]
 [ext_resource type="Texture2D" uid="uid://bols48iodqeif" path="res://factory/background_old.png" id="2_8r1jr"]
 [ext_resource type="Texture2D" uid="uid://ba2ey7jk6mtdo" path="res://factory/background.png" id="2_acnnr"]
 [ext_resource type="TileSet" uid="uid://cdn72xl37w60f" path="res://conveyor/conveyor_animated.tres" id="2_pthvs"]
-[ext_resource type="TileSet" uid="uid://djyojdt0l70c6" path="res://tileset_master.tres" id="3_jenf4"]
+[ext_resource type="TileSet" uid="uid://djyojdt0l70c6" path="res://sprites/tileset_master.tres" id="3_jenf4"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cyf0d"]
 texture = ExtResource("2_acnnr")

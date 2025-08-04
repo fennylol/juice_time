@@ -1,8 +1,8 @@
 [gd_scene load_steps=11 format=3 uid="uid://c0mldfy7te0ru"]
 
 [ext_resource type="Texture2D" uid="uid://cmpcp2tcpea8b" path="res://UI/menuing/machine_tray.png" id="1_iipq3"]
-[ext_resource type="Script" path="res://UI/menuing/machine_tray.gd" id="2_7q7c8"]
-[ext_resource type="Texture2D" uid="uid://bd1s3xs2mr7pu" path="res://sprite_master.png" id="3_sgbe7"]
+[ext_resource type="Script" uid="uid://bcn8fss5v5tnn" path="res://UI/menuing/machine_tray.gd" id="2_7q7c8"]
+[ext_resource type="Texture2D" uid="uid://bd1s3xs2mr7pu" path="res://sprites/sprite_master.png" id="3_sgbe7"]
 [ext_resource type="Texture2D" uid="uid://diyda0sodj3pt" path="res://conveyor/conveyor_tileset_32.png" id="4_hpkaa"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_prxo1"]
