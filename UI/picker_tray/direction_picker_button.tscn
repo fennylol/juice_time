@@ -1,23 +1,23 @@
 [gd_scene load_steps=7 format=3 uid="uid://co8epsardacjj"]
 
-[ext_resource type="Script" path="res://UI/picker_tray/direction_picker_button.gd" id="1_esuvf"]
-[ext_resource type="Texture2D" uid="uid://diyda0sodj3pt" path="res://conveyor/conveyor_tileset_32.png" id="2_mdbch"]
+[ext_resource type="Script" uid="uid://buaj87qojrbga" path="res://UI/picker_tray/direction_picker_button.gd" id="1_esuvf"]
+[ext_resource type="Texture2D" uid="uid://jnk8yigbg00n" path="res://sprites/conveyor_sheet.png" id="2_sq33f"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xrddg"]
-atlas = ExtResource("2_mdbch")
-region = Rect2(0, 1920, 128, 128)
+atlas = ExtResource("2_sq33f")
+region = Rect2(0, 480, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jrkqo"]
-atlas = ExtResource("2_mdbch")
-region = Rect2(0, 896, 128, 128)
+atlas = ExtResource("2_sq33f")
+region = Rect2(0, 224, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0xqhe"]
-atlas = ExtResource("2_mdbch")
-region = Rect2(0, 384, 128, 128)
+atlas = ExtResource("2_sq33f")
+region = Rect2(0, 96, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xghk0"]
-atlas = ExtResource("2_mdbch")
-region = Rect2(0, 1408, 128, 128)
+atlas = ExtResource("2_sq33f")
+region = Rect2(0, 352, 32, 32)
 
 [node name="DirectionPickerButton" type="VBoxContainer"]
 custom_minimum_size = Vector2(384, 384)

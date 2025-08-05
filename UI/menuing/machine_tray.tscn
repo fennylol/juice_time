@@ -1,33 +1,29 @@
-[gd_scene load_steps=11 format=3 uid="uid://c0mldfy7te0ru"]
+[gd_scene load_steps=10 format=3 uid="uid://c0mldfy7te0ru"]
 
 [ext_resource type="Texture2D" uid="uid://cmpcp2tcpea8b" path="res://UI/menuing/machine_tray.png" id="1_iipq3"]
 [ext_resource type="Script" uid="uid://bcn8fss5v5tnn" path="res://UI/menuing/machine_tray.gd" id="2_7q7c8"]
-[ext_resource type="Texture2D" uid="uid://bd1s3xs2mr7pu" path="res://sprites/sprite_master.png" id="3_sgbe7"]
-[ext_resource type="Texture2D" uid="uid://diyda0sodj3pt" path="res://conveyor/conveyor_tileset_32.png" id="4_hpkaa"]
+[ext_resource type="Texture2D" uid="uid://huflvruv0cki" path="res://sprites/juice_master_sheet.png" id="3_kmpli"]
+[ext_resource type="Texture2D" uid="uid://jnk8yigbg00n" path="res://sprites/conveyor_sheet.png" id="4_gcfx7"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_prxo1"]
-atlas = ExtResource("3_sgbe7")
-region = Rect2(0, 0, 128, 128)
+atlas = ExtResource("3_kmpli")
+region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_onfim"]
-atlas = ExtResource("4_hpkaa")
-region = Rect2(0, 384, 128, 128)
+atlas = ExtResource("4_gcfx7")
+region = Rect2(0, 96, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kyyhs"]
-atlas = ExtResource("3_sgbe7")
-region = Rect2(128, 0, 128, 128)
+atlas = ExtResource("3_kmpli")
+region = Rect2(32, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_y0mba"]
-atlas = ExtResource("3_sgbe7")
-region = Rect2(256, 0, 128, 128)
+atlas = ExtResource("3_kmpli")
+region = Rect2(64, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tk7vp"]
-atlas = ExtResource("3_sgbe7")
-region = Rect2(640, 0, 128, 128)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_hkqjc"]
-atlas = ExtResource("3_sgbe7")
-region = Rect2(640, 256, 128, 128)
+atlas = ExtResource("3_kmpli")
+region = Rect2(128, 64, 32, 32)
 
 [node name="MachineTray" type="TextureRect"]
 scale = Vector2(0.75, 0.75)
@@ -144,10 +140,6 @@ texture = SubResource("AtlasTexture_y0mba")
 [node name="mixer_sprite2" type="TextureRect" parent="VBoxContainer/machines/mixer_button/MarginContainer"]
 layout_mode = 2
 texture = SubResource("AtlasTexture_tk7vp")
-
-[node name="mixer_sprite3" type="TextureRect" parent="VBoxContainer/machines/mixer_button/MarginContainer"]
-layout_mode = 2
-texture = SubResource("AtlasTexture_hkqjc")
 
 [node name="conveyor_button" type="Button" parent="VBoxContainer/machines"]
 layout_mode = 2

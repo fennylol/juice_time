@@ -1,10 +1,10 @@
 [gd_resource type="TileSet" load_steps=3 format=3 uid="uid://cdn72xl37w60f"]
 
-[ext_resource type="Texture2D" uid="uid://diyda0sodj3pt" path="res://conveyor/conveyor_tileset_32.png" id="1_vtoaq"]
+[ext_resource type="Texture2D" uid="uid://jnk8yigbg00n" path="res://sprites/conveyor_sheet.png" id="1_msqqp"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cybam"]
-texture = ExtResource("1_vtoaq")
-texture_region_size = Vector2i(128, 128)
+texture = ExtResource("1_msqqp")
+texture_region_size = Vector2i(32, 32)
 0:0/animation_columns = 4
 0:0/animation_speed = 4.0
 0:0/animation_frame_0/duration = 1.0
@@ -119,5 +119,5 @@ texture_region_size = Vector2i(128, 128)
 0:9/0 = 0
 
 [resource]
-tile_size = Vector2i(128, 128)
+tile_size = Vector2i(32, 32)
 sources/0 = SubResource("TileSetAtlasSource_cybam")

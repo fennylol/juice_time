@@ -12,12 +12,12 @@ const TARGET_SPEED = 50
 var target_point := Vector2(0,0)
 var MAX_TARGET := 100
 
-const MIN_CAM_ZOOM = 1.5
-var MAX_CAM_ZOOM = 0.5
+const MIN_CAM_ZOOM = 2.5
+var MAX_CAM_ZOOM = 1.5 #0.5
 var target_zoom: float = 0.5
 const ZOOM_SPEED = 5
 
-const SPRITE_WIDTH = 128
+const SPRITE_WIDTH = 32
 const LEVEL_TILE_MULTIPLIER = 3
 
 var game_paused = true
