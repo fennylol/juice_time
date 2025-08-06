@@ -71,9 +71,7 @@ use_parent_material = true
 tile_map_data = PackedByteArray("AAAAAAAAAAAAAAEAAAAAAAEAAAAAAAIAAAAAAAIAAAAAAAMAAAABAAAAAAABAAEAAAABAAEAAAABAAIAAAABAAIAAAABAAMAAAAAAAQAAAACAAIAAAAAAAUAAAACAAMAAAABAAQAAAADAAIAAAABAAUAAAADAAMAAAA=")
 tile_set = ExtResource("3_jenf4")
 
-[node name="bottle_color" type="TileMapLayer" parent="."]
-use_parent_material = true
-tile_set = ExtResource("3_jenf4")
+[node name="bottle_color" type="Node2D" parent="."]
 
 [node name="bottle_outline" type="TileMapLayer" parent="."]
 use_parent_material = true

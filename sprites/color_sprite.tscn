@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://bump8k18j1g7a"]
+
+[ext_resource type="Texture2D" uid="uid://huflvruv0cki" path="res://sprites/juice_master_sheet.png" id="1_tl231"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hraix"]
+atlas = ExtResource("1_tl231")
+region = Rect2(0, 0, 32, 32)
+
+[node name="ColorSprite" type="Sprite2D"]
+texture = SubResource("AtlasTexture_hraix")

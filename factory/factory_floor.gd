@@ -3,12 +3,14 @@ extends Node2D
 @onready var CONVEYOR_TILES:  TileMapLayer = $conveyors
 @onready var AUTO_COLOR:      TileMapLayer = $auto_color
 @onready var AUTO_TILES:      TileMapLayer = $auto_base
-@onready var BOTTLE_COLOR:    TileMapLayer = $bottle_color
+@onready var BOTTLE_COLOR:    Node2D       = $bottle_color
 @onready var BOTTLE_TILES:    TileMapLayer = $bottle_outline
 @onready var MACHINE_COLOR:   TileMapLayer = $machine_color
 @onready var MACHINE_TILES:   TileMapLayer = $machine_base
 @onready var GHOST_MACHINES:  TileMapLayer = $ghost_of_machine
 @onready var GHOST_CONVEYORS: TileMapLayer = $ghost_of_conveyor
+
+@onready var color_sprite = preload("res://sprites/color_sprite.tscn")
 
 signal shipped_truck(value: int, amount: int)
 
@@ -60,8 +62,8 @@ const DIR_FROM_TILE: Dictionary = {
 signal colors(colors: Array)
 enum {HUE, POSITION}
 const NULL_BOTTLE_HUE = -1 #Color.BLACK
-var GLOBAL_SATURATION = 0.5
-var GLOBAL_LIGHTNESS = 0.5
+const GLOBAL_SATURATION = 0.5
+const GLOBAL_LIGHTNESS = 1.0
 var GLOBAL_PRECISION = 3
 var LAYER_COLOR_DICT = {}
 var COLOR_COMPLEXITY_DICT = {}
@@ -208,8 +210,9 @@ func mix_hues(h0: float, h1: float) -> float:
 ## GIVEN A TILEMAP POSITION "POS", RETURN THE BOTTLE'S "HUE" COMPONENT OF ITS COLOR
 ## as above, except works with hue instead of color, and works with the new TileMapLayer nodes
 func find_hue_from_pos(pos: Vector2i) -> float:
-	if BOTTLE_COLOR.get_used_cells().has(pos): return BOTTLE_COLOR.get_cell_tile_data(pos).modulate.h
-	else: return NULL_BOTTLE_HUE
+	for i in BOTTLE_COLOR.get_children():
+		if i.position == BOTTLE_TILES.map_to_local(pos): return i.modulate.h
+	return NULL_BOTTLE_HUE
 
 ## GIVEN A SPECIFIC COLOR, RETURN THE UNIVERSAL LAYER THAT IS ASSOCIATED WITH THAT COLOR
 func find_layer_from_color(c: Color) -> int:
@@ -472,14 +475,18 @@ func process_world_tick(tick_delta: float):
 	
 	## CLEAR BOTTLE TILEMAP AND PLACE NEW BOTTLE FOR EACH SUCCESSFUL ATTEMPT IN APPROPRIATE LAYER
 	BOTTLE_TILES.clear()
-	BOTTLE_COLOR.clear()
+	for i in BOTTLE_COLOR.get_children():
+		i.queue_free()
 	for new_bottle in successful_attempts:
 		BOTTLE_TILES.set_cell(new_bottle[POSITION], bottle_source, TILE_ATLAS["bottle"])
 		if new_bottle[HUE] != NULL_BOTTLE_HUE:
-			BOTTLE_COLOR.set_cell(new_bottle[POSITION], bottle_source, TILE_ATLAS["juice"])
-			BOTTLE_COLOR.get_cell_tile_data(new_bottle[POSITION]).modulate.h = new_bottle[HUE]
-			BOTTLE_COLOR.get_cell_tile_data(new_bottle[POSITION]).modulate.s = 1.0
-			BOTTLE_COLOR.get_cell_tile_data(new_bottle[POSITION]).modulate.v = 1.0
+			var new_bottle_sprite : Sprite2D  = color_sprite.instantiate()
+			BOTTLE_COLOR.add_child(new_bottle_sprite)
+			new_bottle_sprite.texture.region.position = Vector2(TILE_ATLAS.get("juice") * get_parent().SPRITE_WIDTH)
+			new_bottle_sprite.position = BOTTLE_TILES.map_to_local(new_bottle[POSITION])
+			new_bottle_sprite.modulate.h = new_bottle[HUE]
+			new_bottle_sprite.modulate.s = GLOBAL_SATURATION
+			new_bottle_sprite.modulate.v = GLOBAL_LIGHTNESS
 	
 	## FLIP FLIPPERS IF FLIPPING
 	for pos in FLIPPER_STATE:
